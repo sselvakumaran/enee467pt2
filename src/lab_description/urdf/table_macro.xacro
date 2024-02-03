@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="table">
+  
+  <xacro:macro name="table" params="parent">
+  
+    <link name="table">
+      <inertial>
+        <origin xyz="-4.549932131044825e-16 -1.0237347294850857e-15 0.7364615189197282" rpy="0 0 0"/>
+        <mass value="321.36225333333357"/>
+        <inertia ixx="44.01548" iyy="24.813896" izz="57.996291" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+      </inertial>
+
+      <visual>
+        <origin xyz="0.3385 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find lab_description)/meshes/table/table_demo.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="silver">
+          <color rgba="0.700 0.700 0.700 1.000"/>
+        </material>
+      </visual>
+
+      <collision>
+        <origin xyz="0.3385 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find lab_description)/meshes/table/table_demo.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="table_child_mount"/>
+
+    <joint name="table_parent_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="table"/>
+    </joint>
+
+    <joint name="child_mount_joint" type="fixed">
+      <parent link="table"/>
+      <child link="table_child_mount"/>
+      <origin xyz="0 0 0.766" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
