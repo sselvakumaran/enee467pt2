@@ -36,12 +36,17 @@ def generate_launch_description():
         name='camera_device', default_value=camera_device_var
     )
 
+    marker_size_var = LaunchConfiguration('marker_size_var', default='0.15')
+    marker_size = DeclareLaunchArgument(
+        name='marker_size', default_value=marker_size_var
+    )
 
     desc.add_action(show_output)
     desc.add_action(launch_calibration)
     desc.add_action(aruco_tracker)
     desc.add_action(camera_device)
     desc.add_action(camera_name)
+    desc.add_action(marker_size)
 
     package_dir = get_package_share_directory('camera_calib_pkg')
     yaml_params = os.path.join(
@@ -50,7 +55,7 @@ def generate_launch_description():
 
     start_usb_camera = Node(
         package='usb_cam',
-        executable='usb_cam_node',
+        executable='usb_cam_node_exe',
         name=camera_device_var,
         parameters=[
                 {
@@ -76,8 +81,49 @@ def generate_launch_description():
         namespace=camera_name_var,
     )
 
-    desc.add_action(start_rectification)
+    # desc.add_action(start_rectification)
 
     # Need to add aruco detection
+    start_aruco_detect = Node(
+        package="aruco_opencv",
+        executable="aruco_tracker",
+        parameters=[
+            {
+                'cam_base_topic': 'image_raw',
+                'marker_size': marker_size
+            }
+        ],
+        output='screen'
+    )
+
+    desc.add_action(start_aruco_detect)
+
+    configure_lifecycle = ExecuteProcess(
+        cmd=['ros2', 'lifecycle', 'set', '/aruco_tracker', 'configure'],
+        output='screen'
+    )
+
+    activate_lifecycle = ExecuteProcess(
+        cmd=['ros2', 'lifecycle', 'set', '/aruco_tracker', 'activate'],
+        output='screen'
+    )
+
+    delay_configure = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=start_aruco_detect,
+            on_exit=[configure_lifecycle],
+        )
+    )
+
+    desc.add_action(delay_configure)
+
+    delay_activate = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=configure_lifecycle,
+            on_exit=[activate_lifecycle],
+        )
+    )
+
+    desc.add_action(delay_activate)
 
     return desc
