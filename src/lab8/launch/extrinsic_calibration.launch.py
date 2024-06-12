@@ -6,7 +6,8 @@ from launch.actions import IncludeLaunchDescription, RegisterEventHandler, Execu
 from launch.event_handlers import OnProcessExit, OnExecutionComplete, OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-from launch.substitutions import LaunchConfiguration, FindExecutable
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, FindExecutable, PythonExpression
 
 import sys
 
@@ -19,12 +20,12 @@ def generate_launch_description():
             str_camera_name = i[i.find('=')+1:]
     
 
-    show_output_var = LaunchConfiguration('show_output_var', default='false')
+    show_output_var = LaunchConfiguration('show_output_var', default='False')
     show_output = DeclareLaunchArgument(
         name='show_output', default_value=show_output_var
     )
 
-    launch_calibration_var = LaunchConfiguration('launch_calibration_var', default='false')
+    launch_calibration_var = LaunchConfiguration('launch_calibration_var', default='False')
     launch_calibration = DeclareLaunchArgument(
         name='launch_calibration', default_value=launch_calibration_var
     )
@@ -129,5 +130,17 @@ def generate_launch_description():
     )
 
     desc.add_action(delay_activate)
+
+    show_rqt_image = ExecuteProcess(
+        condition = IfCondition(
+            PythonExpression(show_output_var)
+        ),
+        cmd=[[
+            'ros2 run rqt_image_view rqt_image_view /aruco_tracker/debug'
+        ]],
+        shell = True
+    )
+
+    desc.add_action(show_rqt_image)
 
     return desc
