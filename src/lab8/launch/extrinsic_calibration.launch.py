@@ -41,14 +41,20 @@ def generate_launch_description():
         name='marker_size', default_value=marker_size_var
     )
 
+    marker_dict_var = LaunchConfiguration('marker_dict_var', default='4X4_50')
+    marker_dict = DeclareLaunchArgument(
+        name='marker_dict', default_value=marker_dict_var
+    )
+
     desc.add_action(show_output)
     desc.add_action(launch_calibration)
     desc.add_action(aruco_tracker)
     desc.add_action(camera_device)
     desc.add_action(camera_name)
     desc.add_action(marker_size)
+    desc.add_action(marker_dict)
 
-    package_dir = get_package_share_directory('camera_calib_pkg')
+    package_dir = get_package_share_directory('lab8')
     yaml_params = os.path.join(
         package_dir, 'calibration/camera', f'{camera_name_var}.yaml'
     )
@@ -68,7 +74,7 @@ def generate_launch_description():
                     'pixel_format': 'mjpeg2rgb',
                     'frame_id': 'tracking_cam',
                     'camera_name': camera_name_var,
-                    # 'camera_info_url': yaml_params,
+                    'camera_info_url': yaml_params,
                 }
             ],
         output='screen',
@@ -92,7 +98,8 @@ def generate_launch_description():
         parameters=[
             {
                 'cam_base_topic': 'image_raw',
-                'marker_size': marker_size_var
+                'marker_size': marker_size_var,
+                'marker_dict': marker_dict_var
             }
         ],
         output='screen'
