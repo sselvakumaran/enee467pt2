@@ -1,15 +1,23 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, RegisterEventHandler, ExecuteProcess, DeclareLaunchArgument
+from launch import LaunchDescription, LaunchContext
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler, ExecuteProcess, DeclareLaunchArgument, OpaqueFunction
 from launch.event_handlers import OnProcessExit, OnExecutionComplete, OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration, FindExecutable
 
+import sys
+
 def generate_launch_description():
     desc = LaunchDescription()
+
+    str_camera_name = 'logitech_webcam'
+    for i in sys.argv:
+        if i.find('camera_name') > -1:
+            str_camera_name = i[i.find('=')+1:]
+    
 
     show_output_var = LaunchConfiguration('show_output_var', default='false')
     show_output = DeclareLaunchArgument(
@@ -54,14 +62,10 @@ def generate_launch_description():
     desc.add_action(marker_size)
     desc.add_action(marker_dict)
 
-    package_dir = get_package_share_directory('lab8')
-    yaml_params = os.path.join(
-        package_dir, 'calibration/camera', f'{camera_name_var}.yaml'
-    )
-
     width = LaunchConfiguration('width', default='1280')
     height = LaunchConfiguration('height', default='720')
 
+    # Start USB Camera Connection
     start_usb_camera = Node(
         package='usb_cam',
         executable='usb_cam_node_exe',
@@ -74,7 +78,7 @@ def generate_launch_description():
                     'pixel_format': 'mjpeg2rgb',
                     'frame_id': 'tracking_cam',
                     'camera_name': camera_name_var,
-                    'camera_info_url': yaml_params,
+                    'camera_info_url': f'package://lab8/calibration/camera/{str_camera_name}.yaml',
                 }
             ],
         output='screen',
@@ -82,16 +86,7 @@ def generate_launch_description():
 
     desc.add_action(start_usb_camera)
 
-    # start_rectification = Node(
-    #     package='image_proc',
-    #     executable='image_proc_exe',
-    #     name='rectify_image',
-    #     namespace=camera_name_var,
-    # )
-
-    # # desc.add_action(start_rectification)
-
-    # Need to add aruco detection
+    # Start Aruco Detection Node
     start_aruco_detect = Node(
         package="aruco_opencv",
         executable="aruco_tracker",

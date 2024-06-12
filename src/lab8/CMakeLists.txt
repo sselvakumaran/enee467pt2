@@ -37,6 +37,7 @@ install(TARGETS
 
 install(DIRECTORY
   launch
+  calibration
   DESTINATION share/${PROJECT_NAME}
 )
 
