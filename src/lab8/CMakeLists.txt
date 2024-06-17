@@ -11,15 +11,24 @@ set(PACKAGE_DEPENDENCIES
   rclcpp
   std_msgs
   Eigen3
+  angles
   geometry_msgs
   tf2
   tf2_ros
+  tf2_eigen
+  tf2_geometry_msgs
 )
 
 # find dependencies
 foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
   find_package(${dependency} REQUIRED)
 endforeach()
+
+# Create clangd compilation
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Enable compile_commmands
+execute_process(COMMAND cmake -E create_symlink
+                "${PROJECT_BINARY_DIR}/compile_commands.json"
+                "${PROJECT_SOURCE_DIR}/compile_commands.json")
 
 
 add_executable(aruco_tf src/aruco_tf.cpp)
@@ -38,6 +47,7 @@ install(TARGETS
 install(DIRECTORY
   launch
   calibration
+  include
   DESTINATION share/${PROJECT_NAME}
 )
 
