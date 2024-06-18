@@ -8,6 +8,7 @@
 // #include <fiducial_msgs/FiducialTransform.h>
 // #include <fiducial_msgs/FiducialTransformArray.h>
 #include <fstream>
+// geometry changes
 #include <geometry_msgs/msg/quaternion.h>
 #include <geometry_msgs/msg/transform.h>
 #include <geometry_msgs/msg/transform_stamped.h>
@@ -19,6 +20,7 @@
 // #include <ros/package.h>
 // #include <ros/ros.h>
 #include <string>
+// Make tf into shared pointers, humble tutorial writing tf2 listener cpp
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -83,15 +85,19 @@ inline static void QuatConjugate(tf2::Quaternion &in) {
   in.setZ(-in.z());
 }
 
-class ArucoTF {
+class ArucoTF : public rclcpp::Node{
  public:
 
   ArucoTF(bool load_calib, int num_samples)
-      : ls_markerToWorld(tfBuffer),
+      : Node("aruco_tf"),
         load_calib(load_calib),
         num_samples(num_samples),
         samples_camToMarker(3, num_samples),
         samples_markerToWorld(3, num_samples) {
+    tfBuffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    ls_markerToWorld = std::make_shared<tf2_ros::TransformListener>(*tfBuffer);
+    br_markersToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+    br_camToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     aruco_transform_topic =
         "/logitech_webcam/fiducial_transforms";
   }
@@ -135,10 +141,10 @@ class ArucoTF {
   }
 
   /**
-   * @brief Convert geometry_msgs/Transform type to Eigen quaternion/vector
+   * @brief Convert geometry_msgs::msg/Transform type to Eigen quaternion/vector
    * pairs
    */
-  inline static void geometryMsgToEigen(const geometry_msgs::Transform &geo_msg,
+  inline static void geometryMsgToEigen(const geometry_msgs::msg::Transform &geo_msg,
                                         Eigen::Quaternionf &quat,
                                         Eigen::Vector3f &trans) {
     quat.x() = geo_msg.rotation.x;
@@ -167,8 +173,8 @@ class ArucoTF {
   }
 
   // TF2 buffer
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener ls_markerToWorld;
+  std::unique_ptr<tf2_ros::Buffer> tfBuffer;
+  std::shared_ptr<tf2_ros::TransformListener> ls_markerToWorld{nullptr};
 
   // Marker used for calibration
   const int aruco_calib_target = 1;
@@ -182,24 +188,24 @@ class ArucoTF {
   const int num_samples;
 
   // TransformMsg from camera to marker
-  geometry_msgs::Transform tform_camToMarker;
+  geometry_msgs::msg::Transform tform_camToMarker;
   // TransformMsg from marker to world
-  geometry_msgs::TransformStamped tform_markerToWorld;
+  geometry_msgs::msg::TransformStamped tform_markerToWorld;
   // Name of marker topic
   std::string aruco_transform_topic;
   // Get camera to marker transform
   void lookup_camToMarker();
-  geometry_msgs::Transform lookup_camToMarker(const int &marker_id);
+  geometry_msgs::msg::Transform lookup_camToMarker(const int &marker_id);
   // Get marker to world transform
   void lookup_markerToWorld();
 
   // TF Broadcaster
-  tf2_ros::TransformBroadcaster br_camToWorld;
-  tf2_ros::TransformBroadcaster br_markersToWorld;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_camToWorld;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_markersToWorld;
   // Transform from camera to world
   tf2::Transform tf_camToWorld;
   // TransformMsg from camera to world
-  geometry_msgs::TransformStamped tform_camToWorld;
+  geometry_msgs::msg::TransformStamped tform_camToWorld;
   // Broadcast camera pose wrt world frame
   void broadcast_camToWorld();
   // Broadcast all other markers to world
@@ -219,7 +225,7 @@ class ArucoTF {
   void verifyCalibration(const int &marker_id);
   Eigen::MatrixXf samples_camToMarker, samples_markerToWorld;
 
-  std::vector<geometry_msgs::Pose> calibrated_marker_poses;
-  std::vector<geometry_msgs::Pose> actual_marker_poses;
+  std::vector<geometry_msgs::msg::Pose> calibrated_marker_poses;
+  std::vector<geometry_msgs::msg::Pose> actual_marker_poses;
 
 };
