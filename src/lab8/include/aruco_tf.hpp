@@ -1,14 +1,24 @@
 #pragma once
+#include <aruco_opencv_msgs/msg/detail/aruco_detection__struct.hpp>
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <string>
+
+#include <std_msgs/msg/string.hpp>
+
 #include "prettyprint.hpp"
 #include "json.hpp"
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/Eigenvalues>
 #include <angles/angles.h>
 // Replace aruco_opencv_msgs
+#include "aruco_opencv_msgs/msg/aruco_detection.hpp"
 // #include <fiducial_msgs/FiducialTransform.h>
 // #include <fiducial_msgs/FiducialTransformArray.h>
 #include <fstream>
 // geometry changes
+#include <geometry_msgs/msg/detail/point__struct.h>
 #include <geometry_msgs/msg/quaternion.h>
 #include <geometry_msgs/msg/transform.h>
 #include <geometry_msgs/msg/transform_stamped.h>
@@ -19,12 +29,11 @@
 // #include <ros/console.h>
 // #include <ros/package.h>
 // #include <ros/ros.h>
-#include <string>
 // Make tf into shared pointers, humble tutorial writing tf2 listener cpp
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <vector>
@@ -88,19 +97,28 @@ inline static void QuatConjugate(tf2::Quaternion &in) {
 class ArucoTF : public rclcpp::Node{
  public:
 
-  ArucoTF(bool load_calib, int num_samples)
-      : Node("aruco_tf"),
-        load_calib(load_calib),
-        num_samples(num_samples),
-        samples_camToMarker(3, num_samples),
-        samples_markerToWorld(3, num_samples) {
-    tfBuffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
-    ls_markerToWorld = std::make_shared<tf2_ros::TransformListener>(*tfBuffer);
-    br_markersToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    br_camToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    aruco_transform_topic =
-        "/logitech_webcam/fiducial_transforms";
-  }
+  ArucoTF()
+    : Node("aruco_tf"), samples_camToMarker(3, 15)
+    {
+      // Parameter declaration
+      this->declare_parameter("load_calibration", false);
+      this->declare_parameter("verify_calibration", false);
+      this->declare_parameter("num_poses", 15);
+
+      load_calib = this->get_parameter("load_calibration").as_bool();
+      verify_calib = this->get_parameter("load_calibration").as_bool();
+      num_samples = this->get_parameter("num_poses").as_int();
+
+      // samples_camToMarker(3, num_samples);
+      // samples_markerToWorld(3, num_samples);
+
+      tfBuffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+      ls_markerToWorld = std::make_shared<tf2_ros::TransformListener>(*tfBuffer);
+      br_markersToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+      br_camToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+      aruco_transform_topic =
+          "/aruco_detections";
+    }
 
   /**
    * @brief Custom exception when required transformation
@@ -184,8 +202,10 @@ class ArucoTF : public rclcpp::Node{
   bool calib = false;
   // Reuse existing calibration
   bool load_calib;
+  // Check if verification should be applied
+  bool verify_calib;
   // Number of calibration samples
-  const int num_samples;
+  int num_samples;
 
   // TransformMsg from camera to marker
   geometry_msgs::msg::Transform tform_camToMarker;

@@ -17,7 +17,11 @@ set(PACKAGE_DEPENDENCIES
   tf2_ros
   tf2_eigen
   tf2_geometry_msgs
+  aruco_opencv_msgs
+  lab8
 )
+
+find_package(rosidl_default_generators REQUIRED)
 
 # find dependencies
 foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
@@ -29,7 +33,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Enable compile_commmands
 execute_process(COMMAND cmake -E create_symlink
                 "${PROJECT_BINARY_DIR}/compile_commands.json"
                 "${PROJECT_SOURCE_DIR}/compile_commands.json")
-
 
 add_executable(aruco_tf src/aruco_tf.cpp)
 ament_target_dependencies(aruco_tf ${PACKAGE_DEPENDENCIES})
@@ -49,6 +52,11 @@ install(DIRECTORY
   calibration
   include
   DESTINATION share/${PROJECT_NAME}
+)
+
+rosidl_generate_interfaces("${PROJECT_NAME}"
+"msg/Detection.msg"
+DEPENDENCIES aruco_opencv_msgs
 )
 
 if(BUILD_TESTING)
