@@ -38,7 +38,7 @@ class MinimalPublisher : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
-    
+
     rclcpp::Subscription<aruco_opencv_msgs::msg::ArucoDetection>::SharedPtr subscriber_;
     aruco_opencv_msgs::msg::ArucoDetection aruco_detection;
     };
@@ -56,8 +56,18 @@ int main(int argc, char * argv[])
 
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
+  if (!calibrate_cam->load_calib){
+      RCLCPP_INFO(calibrate_cam->get_logger(), "Works ig %d", calibrate_cam->load_calib);
+  }
+
   // rclcpp::spin(std::make_shared<MinimalPublisher>());
-  rclcpp::spin(calibrate_cam);
+  // rclcpp::spin(calibrate_cam);
+
+  // This works for query one message
+  // auto message = std_msgs::msg::String();
+  // bool found = rclcpp::wait_for_message(message, calibrate_cam, "chatter", std::chrono::seconds(1));
+  // RCLCPP_INFO(calibrate_cam->get_logger(), "scan found= %d", found);
+  // RCLCPP_INFO(calibrate_cam->get_logger(), "Text found: %s", message.data.c_str());
 
 //consider do i need to spin? or can i just call the fns?
 //i require the info from topic /aruco_detections
