@@ -1,5 +1,11 @@
 #include "../include/aruco_tf.hpp"
+#include <Eigen/src/Core/Matrix.h>
+#include <Eigen/src/Geometry/Quaternion.h>
 #include <rclcpp/rate.hpp>
+#include <rclcpp/utilities.hpp>
+#include <tf2/LinearMath/Transform.h>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 using namespace std::chrono_literals;
 
@@ -45,6 +51,70 @@ class MinimalPublisher : public rclcpp::Node
 
 
 
+// ArucoTF Functions
+void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::Vector3f &save_trans){
+  if (!ArucoTF::calib){
+    RCLCPP_INFO(this->get_logger(), "Saving calibration to file");
+
+    std::string calib_path = ament_index_cpp::get_package_share_directory("lab8");
+    calib_path += "/calibration/camera/logitech_extrinsics.json";
+
+    std::vector<float> rot, trans;
+
+    // Convert quaternion (w,x,y,z) from Eigen to Vector
+    rot.push_back(save_rot.w());
+    rot.push_back(save_rot.x());
+    rot.push_back(save_rot.y());
+    rot.push_back(save_rot.z());
+
+    // Convert translation from Eigen to Vector
+    trans.push_back(save_trans(0));
+    trans.push_back(save_trans(1));
+    trans.push_back(save_trans(2));
+
+    // Open existing calibration
+    std::ifstream calib_file_in;
+    calib_file_in.open(calib_path);
+
+    std::stringstream ss;
+    if (calib_file_in.is_open()) {
+      // Convert to string
+      ss << calib_file_in.rdbuf();
+    } else {
+      std::cout << "Unable to open file" << std::endl;
+    }
+    calib_file_in.close();
+
+    // Parse calibration text to json object
+    nlohmann::json calib_data;
+    try {
+      calib_data = nlohmann::json::parse(ss);
+    } catch (nlohmann::json::parse_error &e) {
+      RCLCPP_WARN(this->get_logger(), "JSON Parse failed: %s", e.what());
+    }
+
+    // Find corresponding camera data in json
+    std::string calib_section = "logitech_webcam";
+    auto cam_section_itr = calib_data.find(calib_section);
+    if (cam_section_itr != calib_data.end()) {
+      std::cout << "FOUND " << calib_section << " in calibration file."
+                << std::endl;
+    } else {
+      std::cout << "NOT FOUND " << calib_section << " in calibration file."
+                << std::endl;
+    }
+
+    // Add rotation and translation to json object
+    calib_data[calib_section]["rot"] = rot;
+    calib_data[calib_section]["trans"] = trans;
+
+    std::ofstream calib_file_out(calib_path,
+                                 std::fstream::out | std::ofstream::trunc);
+    calib_file_out << std::setprecision(16) << calib_data;
+    calib_file_out.close();
+  }
+}
+
 
 
 
@@ -56,12 +126,33 @@ int main(int argc, char * argv[])
 
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
-  if (!calibrate_cam->load_calib){
-      RCLCPP_INFO(calibrate_cam->get_logger(), "Works ig %d", calibrate_cam->load_calib);
-  }
+  RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
+  
+  const Eigen::Vector3f a(1, 2, 3);
+  const Eigen::Quaternionf b(1, 2, 3, 4);
 
-  // rclcpp::spin(std::make_shared<MinimalPublisher>());
-  // rclcpp::spin(calibrate_cam);
+  // This saves to shared directory which only updates at every colcon build, which doesnt really help in development
+  // also hard to find file
+  // The function works, testing shows proper update
+  calibrate_cam->saveCalibToFile(b, a);
+
+  // rclcpp::spin(make_shared<ArucoTF>());
+  tf2::Transform tf_MarkerToWorld;
+  geometry_msgs::msg::Pose marker_pose;
+
+  // Do while ok() 
+
+
+  // Testing Eigen variables
+  // std::cout << calibrate_cam->samples_camToMarker.rows() << " " << calibrate_cam->samples_camToMarker.cols() << "\n";
+  // std::cout << calibrate_cam->samples_markerToWorld.rows() << " " << calibrate_cam->samples_markerToWorld.cols() << "\n";
+
+  // calibrate_cam->samples_markerToWorld.col(0) = Eigen::Vector3f(1, 2, 3).transpose();
+  // calibrate_cam->samples_camToMarker.col(0) = Eigen::Vector3f(4, 5, 3).transpose();
+
+  // std::cout << calibrate_cam->samples_markerToWorld.col(0);
+  // std::cout << calibrate_cam->samples_camToMarker.col(0);
+
 
   // This works for query one message
   // auto message = std_msgs::msg::String();
@@ -69,9 +160,6 @@ int main(int argc, char * argv[])
   // RCLCPP_INFO(calibrate_cam->get_logger(), "scan found= %d", found);
   // RCLCPP_INFO(calibrate_cam->get_logger(), "Text found: %s", message.data.c_str());
 
-//consider do i need to spin? or can i just call the fns?
-//i require the info from topic /aruco_detections
-// test wait_for_message using *this
 
   // End execution
   rclcpp::shutdown();

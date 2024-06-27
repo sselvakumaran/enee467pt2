@@ -18,6 +18,8 @@ set(PACKAGE_DEPENDENCIES
   tf2_eigen
   tf2_geometry_msgs
   aruco_opencv_msgs
+
+  ament_index_cpp
 )
 
 find_package(rosidl_default_generators REQUIRED)

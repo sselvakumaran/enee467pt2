@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <std_msgs/msg/string.hpp>
@@ -98,7 +99,9 @@ class ArucoTF : public rclcpp::Node{
  public:
 
   ArucoTF()
-    : Node("aruco_tf"), samples_camToMarker(3, 15)
+    : Node("aruco_tf")
+      // samples_camToMarker(3, this->get_parameter("num_poses").as_int()),
+      // samples_markerToWorld(3, this->get_parameter("num_poses").as_int())
     {
       // Parameter declaration
       this->declare_parameter("load_calibration", false);
@@ -109,8 +112,11 @@ class ArucoTF : public rclcpp::Node{
       verify_calib = this->get_parameter("load_calibration").as_bool();
       num_samples = this->get_parameter("num_poses").as_int();
 
-      // samples_camToMarker(3, num_samples);
-      // samples_markerToWorld(3, num_samples);
+      Eigen::MatrixXf s1(3, num_samples);
+      samples_camToMarker = s1;
+
+      Eigen::MatrixXf s2(3, num_samples);
+      samples_markerToWorld = s2;
 
       tfBuffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
       ls_markerToWorld = std::make_shared<tf2_ros::TransformListener>(*tfBuffer);
@@ -244,6 +250,7 @@ class ArucoTF : public rclcpp::Node{
   void loadCalibFromFile();
   void verifyCalibration(const int &marker_id);
   Eigen::MatrixXf samples_camToMarker, samples_markerToWorld;
+
 
   std::vector<geometry_msgs::msg::Pose> calibrated_marker_poses;
   std::vector<geometry_msgs::msg::Pose> actual_marker_poses;
