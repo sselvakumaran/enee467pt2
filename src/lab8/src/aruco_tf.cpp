@@ -1,5 +1,6 @@
 #include "../include/aruco_tf.hpp"
 #include <Eigen/src/Core/Matrix.h>
+#include <Eigen/src/Core/util/Meta.h>
 #include <Eigen/src/Geometry/Quaternion.h>
 #include <rclcpp/rate.hpp>
 #include <rclcpp/utilities.hpp>
@@ -59,6 +60,10 @@ void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::V
     std::string calib_path = ament_index_cpp::get_package_share_directory("lab8");
     calib_path += "/calibration/camera/logitech_extrinsics.json";
 
+    auto index = calib_path.find("install");
+    auto actual_path = calib_path.substr(0, index);
+    actual_path += "src/lab8/calibration/camera/logitech_extrinsics.json";
+
     std::vector<float> rot, trans;
 
     // Convert quaternion (w,x,y,z) from Eigen to Vector
@@ -112,6 +117,11 @@ void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::V
                                  std::fstream::out | std::ofstream::trunc);
     calib_file_out << std::setprecision(16) << calib_data;
     calib_file_out.close();
+
+    std::ofstream actual_file_out(actual_path,
+                                 std::fstream::out | std::ofstream::trunc);
+    actual_file_out << std::setprecision(16) << calib_data;
+    actual_file_out.close();
   }
 }
 
