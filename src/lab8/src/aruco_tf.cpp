@@ -4,6 +4,7 @@
 #include <Eigen/src/Geometry/Quaternion.h>
 #include <rclcpp/rate.hpp>
 #include <rclcpp/utilities.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -53,6 +54,12 @@ class MinimalPublisher : public rclcpp::Node
 
 
 // ArucoTF Functions
+/**
+ * @brief Function to save calibration data to file
+ * 
+ * @param save_rot Rotation extrinsic
+ * @param save_trans Translation extrinsic
+ */
 void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::Vector3f &save_trans){
   if (!ArucoTF::calib){
     RCLCPP_INFO(this->get_logger(), "Saving calibration to file");
@@ -126,8 +133,93 @@ void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::V
 }
 
 
+/**
+ * @brief Function to load calibration data from file
+ * 
+ */
+void ArucoTF::loadCalibFromFile() {
+  if (!ArucoTF::calib) {
+    RCLCPP_INFO(this->get_logger(), "Saving calibration to file");
 
+    std::string calib_path = ament_index_cpp::get_package_share_directory("lab8");
+    calib_path += "/calibration/camera/logitech_extrinsics.json";
 
+    // Open existing calibration
+    std::ifstream calib_file_in;
+    calib_file_in.open(calib_path);
+
+    std::stringstream ss;
+    if (calib_file_in.is_open()) {
+      // Convert to string
+      ss << calib_file_in.rdbuf();
+    } else {
+      std::cout << "Unable to open file" << std::endl;
+    }
+    calib_file_in.close();
+
+    // Parse calibration text to json objectl
+    nlohmann::json calib_data;
+    try {
+      calib_data = nlohmann::json::parse(ss);
+    } catch (nlohmann::json::parse_error &e) {
+      RCLCPP_WARN(this->get_logger(), "JSON Parse failed: %s", e.what());
+    }
+
+    // Find corresponding camera data in json
+    std::string calib_section = "logitech_webcam";
+    auto cam_section_itr = calib_data.find(calib_section);
+    if (cam_section_itr != calib_data.end()) {
+      std::cout << "FOUND " << calib_section << " in calibration file."
+                << std::endl;
+      // Get translation and rotation data from json
+      std::vector<float> trans_json = calib_data[calib_section]["trans"];
+      std::vector<float> rot_json = calib_data[calib_section]["rot"];
+
+      // Vector in (x, y, z) format
+      Eigen::Vector3f trans;
+      trans(0) = trans_json[0];
+      trans(1) = trans_json[1];
+      trans(2) = trans_json[2];
+      // Quaternion in (w,x,y,z) format
+      Eigen::Quaternionf quat;
+      quat.w() = rot_json[0];
+      quat.x() = rot_json[1];
+      quat.y() = rot_json[2];
+      quat.z() = rot_json[3];
+
+      std::cout << "Translation: " << trans_json << std::endl;
+      std::cout << "Rotation: " << rot_json << std::endl;
+
+      // Apply calibration data to camera
+      tf2::Quaternion rot_quat_camToWorld(quat.x(), quat.y(), quat.z(), quat.w());
+      rot_quat_camToWorld.normalize();
+
+      // Get translation in tf2
+      tf2::Vector3 trans_camToWorld(trans(0), trans(1), trans(2));
+
+      // Convert to tf2
+      ArucoTF::tf_camToWorld.setRotation(rot_quat_camToWorld);
+      ArucoTF::tf_camToWorld.setOrigin(trans_camToWorld);
+      
+      // Set calibrated
+      ArucoTF::calib = true;
+    } else {
+      std::cout << "NOT FOUND " << calib_section << " in calibration file."
+                << std::endl;
+      ArucoTF::calib = false;
+    }
+  }
+}
+
+// Remove setTFCamToWorld Fn
+
+/**
+ * @brief Main function
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int main(int argc, char * argv[])
 {
   // Initialise ROS
@@ -141,12 +233,11 @@ int main(int argc, char * argv[])
   const Eigen::Vector3f a(1, 2, 3);
   const Eigen::Quaternionf b(1, 2, 3, 4);
 
-  // This saves to shared directory which only updates at every colcon build, which doesnt really help in development
-  // also hard to find file
-  // The function works, testing shows proper update
-  calibrate_cam->saveCalibToFile(b, a);
+  // Testing Function
+  calibrate_cam->loadCalibFromFile();
 
-  // rclcpp::spin(make_shared<ArucoTF>());
+
+  rclcpp::spin(std::make_shared<ArucoTF>());
   tf2::Transform tf_MarkerToWorld;
   geometry_msgs::msg::Pose marker_pose;
 

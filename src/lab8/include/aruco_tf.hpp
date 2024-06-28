@@ -241,8 +241,6 @@ class ArucoTF : public rclcpp::Node{
                                 tf2::Transform &tf_newMarkerToWorld);
 
   // 3D point to point transform estimation
-  void setTFCamToWorld(tf2::Quaternion &quat, tf2::Vector3 &trans);
-  void setTFCamToWorld(Eigen::Quaternionf &quat, Eigen::Vector3f &trans);
   void estimateTransformPointToPoint();
   void takeCalibrationSamples();
   void saveCalibToFile(const Eigen::Quaternionf &save_rot,
