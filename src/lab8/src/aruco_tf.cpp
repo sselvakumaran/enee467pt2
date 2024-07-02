@@ -2,8 +2,10 @@
 #include <Eigen/src/Core/Matrix.h>
 #include <Eigen/src/Core/util/Meta.h>
 #include <Eigen/src/Geometry/Quaternion.h>
+#include <aruco_opencv_msgs/msg/detail/aruco_detection__struct.hpp>
 #include <rclcpp/rate.hpp>
 #include <rclcpp/utilities.hpp>
+#include <rclcpp/wait_for_message.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 
@@ -247,6 +249,228 @@ void ArucoTF::estimateTransformPointToPoint() {
 }
 
 
+// ## Needs testing
+/**
+ * @brief Function to get marker pose in camera coordinates
+ * Sets class variable with returned value
+ * 
+ */
+void ArucoTF::lookup_camToMarker() {
+  RCLCPP_INFO(this->get_logger(), "Getting aruco transform");
+
+  auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+
+  if (found){
+    for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
+        if (marker.marker_id == aruco_calib_target) {
+          ArucoTF::tform_camToMarker = marker.pose;
+        }
+      }
+  }
+}
+
+
+// ## Needs testing
+/**
+ * @brief Function to get marker pose in camera coordinates
+ * 
+ * @param marker_id Overload marker_id
+ * @return geometry_msgs::Transform - transform from target fram to source
+ */
+geometry_msgs::msg::Pose ArucoTF::lookup_camToMarker(const int &marker_id) {
+  RCLCPP_INFO(this->get_logger(), "Getting aruco transform for Marker %i", marker_id);
+
+  auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+
+  if (found){
+    for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
+        if (marker.marker_id == aruco_calib_target) {
+          ArucoTF::tform_camToMarker = marker.pose;
+        }
+      }
+  }
+}
+
+
+// ## Need testing
+/**
+ * @brief Function to get transform from tool0 to world frame
+ * The marker is placed at the tool0 location on the robot lookupTransform goes to target frame from source
+ * 
+ */
+void ArucoTF::lookup_markerToWorld() {
+  // TF2 listener for marker to world
+  try {
+    if (ArucoTF::tfBuffer->canTransform("base_link", "tool0", rclcpp::Time(0))) {
+      RCLCPP_INFO(this->get_logger(), "Getting tool0 to world");
+      ArucoTF::tform_markerToWorld =
+          tfBuffer->lookupTransform("base_link", "tool0", rclcpp::Time(0));
+    } else {
+      ArucoTF::tform_markerToWorld = geometry_msgs::msg::TransformStamped();
+      RCLCPP_INFO(this->get_logger(), "Could not find transform from world to tool0");
+    }
+  } catch (tf2::TransformException &ex) {
+    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
+    rclcpp::Rate(2.0).sleep();
+  }
+}
+
+
+// ## Needs testing
+/**
+ * @brief Function to broadcast camera pose with respect to world
+ */
+void ArucoTF::broadcast_camToWorld() {
+  RCLCPP_INFO_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 10, "Broadcasting camera to world");
+  ArucoTF::tform_camToWorld.header.stamp = this->get_clock()->now();
+  ArucoTF::tform_camToWorld.header.frame_id = "base_link";
+  ArucoTF::tform_camToWorld.child_frame_id = "logitech_webcam";
+  ArucoTF::tform_camToWorld.transform = tf2::toMsg(ArucoTF::tf_camToWorld);
+  ArucoTF::br_camToWorld->sendTransform(ArucoTF::tform_camToWorld);
+}
+
+
+// ## Needs testing
+/**
+ * @brief Function to broadcast marker pose from camera frame to world frame
+ */
+void ArucoTF::broadcast_allMarkersToWorld() {
+
+  auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+
+  // Lookup all markers
+  if (found) {
+    for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
+      // Check if marker id is in the list
+      if (std::count(ArucoTF::aruco_track_targets.begin(), ArucoTF::aruco_track_targets.end(), marker.marker_id)) {
+        RCLCPP_INFO_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 10, "Broadcasting marker_" << marker.marker_id << " to world");
+
+        geometry_msgs::msg::Pose tform_camToNewMarker = marker.pose;
+        tf2::Transform tf_camToNewMarker;
+        tf2::fromMsg(tform_camToNewMarker, tf_camToNewMarker);
+
+        // Transform to world frame
+        tf2::Transform tf_newMarkerToWorld =
+            ArucoTF::tf_camToWorld * tf_camToNewMarker;
+
+        // Convert back to geometry_msgs::TransformStamped
+        geometry_msgs::msg::TransformStamped tform_newMarkerToWorld;
+        tform_newMarkerToWorld.header.stamp = this->get_clock()->now();
+        tform_newMarkerToWorld.header.frame_id = "base_link";
+        tform_newMarkerToWorld.child_frame_id = "marker_" + std::to_string(marker.marker_id);
+        tform_newMarkerToWorld.transform = tf2::toMsg(tf_newMarkerToWorld);
+
+        ArucoTF::br_markersToWorld->sendTransform(tform_newMarkerToWorld);          
+      }
+    }
+  }
+}
+
+
+// ## Needs testing
+/**
+ * @brief Function to compute marker pose from camera frame to world frame
+ */
+void ArucoTF::lookup_allMarkersToWorld(const int &marker_id,
+                                       tf2::Transform &tf_newMarkerToWorld) {
+  try {
+    // Get marker_id to cam
+    geometry_msgs::msg::Pose tform_camToNewMarker =
+        ArucoTF::lookup_camToMarker(marker_id);
+    tf2::Transform tf_camToNewMarker;
+    tf2::fromMsg(tform_camToNewMarker, tf_camToNewMarker);
+
+    // Transform to world frame
+    tf_newMarkerToWorld = ArucoTF::tf_camToWorld * tf_camToNewMarker;
+    tf_newMarkerToWorld.getRotation().normalize();
+
+  } catch (const ArucoTF::NoTransformException &e) {
+    RCLCPP_WARN(this->get_logger(), "%s", e.what());
+    rclcpp::Rate(2.0).sleep();
+  }
+}
+
+
+// ## Needs testing
+/**
+ * @brief Function to take samples of camera to marker and marker to world poses from robot
+ * 
+ */
+void ArucoTF::takeCalibrationSamples() {
+  if (ArucoTF::calib) {
+    RCLCPP_INFO(this->get_logger(), "Already calibrated, exiting.");
+    return;
+  };
+
+  int sample_cnt = 0;
+  RCLCPP_INFO(this->get_logger(), "Move robot to pose...");
+  RCLCPP_INFO(this->get_logger(), "Press ENTER to record sample.");
+  
+  while (sample_cnt < num_samples) {
+    RCLCPP_INFO(this->get_logger(), "Pose: %i/%i", sample_cnt + 1, ArucoTF::num_samples);
+    getchar();
+
+    ArucoTF::lookup_camToMarker();
+    ArucoTF::samples_camToMarker.col(sample_cnt) =
+        Eigen::Vector3f(ArucoTF::tform_camToMarker.position.x,
+                        ArucoTF::tform_camToMarker.position.y,
+                        ArucoTF::tform_camToMarker.position.z)
+            .transpose();
+
+    ArucoTF::lookup_markerToWorld();
+    ArucoTF::samples_markerToWorld.col(sample_cnt) =
+        Eigen::Vector3f(ArucoTF::tform_markerToWorld.transform.translation.x,
+                        ArucoTF::tform_markerToWorld.transform.translation.y,
+                        ArucoTF::tform_markerToWorld.transform.translation.z)
+            .transpose();
+
+    sample_cnt++;
+  }
+  RCLCPP_INFO(this->get_logger(), "Calibration samples gathered");
+}
+
+
+// ## Need testing
+/**
+ * @brief Compare calibration marker to ideal transformation
+ *
+ * @param marker_id
+ */
+void ArucoTF::verifyCalibration(const int &marker_id) {
+  int sample_cnt = 0;
+  RCLCPP_INFO_STREAM(this->get_logger(), "Move robot to pose...");
+  RCLCPP_INFO_STREAM(this->get_logger(), "Press ENTER to record sample.");
+
+  while (sample_cnt < ArucoTF::num_samples) {
+    RCLCPP_INFO_STREAM(this->get_logger(), "Pose: " << sample_cnt + 1 << "/"
+                        << ArucoTF::num_samples);
+    getchar();
+
+    // Get marker to world using lookup_allMarkersToWorld()
+    tf2::Transform tf_calibMarkerToWorld;
+    ArucoTF::lookup_allMarkersToWorld(ArucoTF::aruco_calib_target,
+                                      tf_calibMarkerToWorld);
+
+    // Get tool0 TF using lookup_markerToWorld() function
+    tf2::Stamped<tf2::Transform> tf_toolToWorld;
+    ArucoTF::lookup_markerToWorld();
+    tf2::fromMsg(ArucoTF::tform_markerToWorld, tf_toolToWorld);
+
+    // Calculate the 7 dimensional error (x,y,z,qx,qy,qz,qw) between the two
+
+
+    sample_cnt++;
+  }
+  RCLCPP_INFO_ONCE(this->get_logger(), "Verification samples gathered");
+
+  // Once the errors are gathered, calculate sample mean vector and sample covariance matrix
+
+
+}
+
 
 /**
  * @brief Main function
@@ -272,9 +496,9 @@ int main(int argc, char * argv[])
   calibrate_cam->loadCalibFromFile();
 
 
-  rclcpp::spin(std::make_shared<ArucoTF>());
-  tf2::Transform tf_MarkerToWorld;
-  geometry_msgs::msg::Pose marker_pose;
+  // rclcpp::spin(calibrate_cam);
+  // tf2::Transform tf_MarkerToWorld;
+  // geometry_msgs::msg::Pose marker_pose;
 
   // Do while ok() 
 
@@ -292,7 +516,7 @@ int main(int argc, char * argv[])
 
   // This works for query one message
   // auto message = std_msgs::msg::String();
-  // bool found = rclcpp::wait_for_message(message, calibrate_cam, "chatter", std::chrono::seconds(1));
+  // bool found = rclcpp::wait_for_message(message, std::make_shared<MinimalPublisher>(), "chatter", std::chrono::seconds(1));
   // RCLCPP_INFO(calibrate_cam->get_logger(), "scan found= %d", found);
   // RCLCPP_INFO(calibrate_cam->get_logger(), "Text found: %s", message.data.c_str());
 

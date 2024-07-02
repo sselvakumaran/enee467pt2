@@ -15,6 +15,7 @@
 #include <angles/angles.h>
 // Replace aruco_opencv_msgs
 #include "aruco_opencv_msgs/msg/aruco_detection.hpp"
+#include "aruco_opencv_msgs/msg/marker_pose.hpp"
 // #include <fiducial_msgs/FiducialTransform.h>
 // #include <fiducial_msgs/FiducialTransformArray.h>
 #include <fstream>
@@ -214,14 +215,14 @@ class ArucoTF : public rclcpp::Node{
   int num_samples;
 
   // TransformMsg from camera to marker
-  geometry_msgs::msg::Transform tform_camToMarker;
+  geometry_msgs::msg::Pose tform_camToMarker;
   // TransformMsg from marker to world
   geometry_msgs::msg::TransformStamped tform_markerToWorld;
   // Name of marker topic
   std::string aruco_transform_topic;
   // Get camera to marker transform
   void lookup_camToMarker();
-  geometry_msgs::msg::Transform lookup_camToMarker(const int &marker_id);
+  geometry_msgs::msg::Pose lookup_camToMarker(const int &marker_id);
   // Get marker to world transform
   void lookup_markerToWorld();
 
