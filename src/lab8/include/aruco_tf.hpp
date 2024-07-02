@@ -1,45 +1,60 @@
 #pragma once
-#include <aruco_opencv_msgs/msg/detail/aruco_detection__struct.hpp>
+
+// Personal Libraries
+#include "prettyprint.hpp"
+#include "json.hpp"
+
+// C++ Libraries
+#include <iostream>
 #include <chrono>
 #include <functional>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <fstream>
+#include <vector>
+#include <exception>
 
-#include <std_msgs/msg/string.hpp>
-
-#include "prettyprint.hpp"
-#include "json.hpp"
+// Eigen Resources
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/Eigenvalues>
+#include <Eigen/src/Core/Matrix.h>
+#include <Eigen/src/Core/util/Meta.h>
+#include <Eigen/src/Geometry/Quaternion.h>
+
+// ROS Libraries
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/rate.hpp>
+#include <rclcpp/utilities.hpp>
+#include <rclcpp/wait_for_message.hpp>
+
 #include <angles/angles.h>
-// Replace aruco_opencv_msgs
+
+// ROS Messages
+#include <std_msgs/msg/string.hpp>
+
+#include <aruco_opencv_msgs/msg/detail/aruco_detection__struct.hpp>
 #include "aruco_opencv_msgs/msg/aruco_detection.hpp"
 #include "aruco_opencv_msgs/msg/marker_pose.hpp"
-// #include <fiducial_msgs/FiducialTransform.h>
-// #include <fiducial_msgs/FiducialTransformArray.h>
-#include <fstream>
-// geometry changes
+
 #include <geometry_msgs/msg/detail/point__struct.h>
 #include <geometry_msgs/msg/quaternion.h>
 #include <geometry_msgs/msg/transform.h>
 #include <geometry_msgs/msg/transform_stamped.h>
 #include <geometry_msgs/msg/vector3.h>
-#include <iostream>
-// Replace rclcpp
-#include <rclcpp/rclcpp.hpp>
-// #include <ros/console.h>
-// #include <ros/package.h>
-// #include <ros/ros.h>
-// Make tf into shared pointers, humble tutorial writing tf2 listener cpp
+
+// TF2 Libraries
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
-#include <vector>
-#include <exception>
+
+// Ament Libraries
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
 
 std::ostream &operator<<(std::ostream &os, const tf2::Vector3 &vec) {
   os << "tf2::Vector3:\n";

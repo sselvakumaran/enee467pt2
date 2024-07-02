@@ -1,59 +1,7 @@
 #include "../include/aruco_tf.hpp"
-#include <Eigen/src/Core/Matrix.h>
-#include <Eigen/src/Core/util/Meta.h>
-#include <Eigen/src/Geometry/Quaternion.h>
-#include <aruco_opencv_msgs/msg/detail/aruco_detection__struct.hpp>
-#include <rclcpp/rate.hpp>
-#include <rclcpp/utilities.hpp>
-#include <rclcpp/wait_for_message.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
 
 using namespace std::chrono_literals;
-
-/* This example creates a subclass of Node and uses std::bind() to register a
-* member function as a callback from the timer. */
-// Test Node
-class MinimalPublisher : public rclcpp::Node
-{
-  public:
-    MinimalPublisher()
-    : Node("minimal_publisher"), count_(0)
-    {
-      this->declare_parameter("mine", "hello");
-
-      publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
-      timer_ = this->create_wall_timer(
-      500ms, std::bind(&MinimalPublisher::timer_callback, this));
-
-      subscriber_ = this->create_subscription<aruco_opencv_msgs::msg::ArucoDetection>("aruco_detections", 10, std::bind(&MinimalPublisher::callback, this, std::placeholders::_1));
-    }
-
-  private:
-    void callback(const aruco_opencv_msgs::msg::ArucoDetection & msg) const {
-      aruco_opencv_msgs::msg::ArucoDetection detect = msg;
-      RCLCPP_INFO(this->get_logger(), "Hmmm");
-    }
-    void timer_callback()
-    {
-      std::string param = this->get_parameter("mine").as_string();
-
-      auto message = std_msgs::msg::String();
-      message.data = ", world! " + std::to_string(count_++);
-      RCLCPP_INFO(this->get_logger(), "Publishing: '%s%s'", param.c_str(), message.data.c_str());
-      publisher_->publish(message);
-    }
-    rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-    size_t count_;
-
-    rclcpp::Subscription<aruco_opencv_msgs::msg::ArucoDetection>::SharedPtr subscriber_;
-    aruco_opencv_msgs::msg::ArucoDetection aruco_detection;
-    };
-
-
 
 // ArucoTF Functions
 /**
@@ -488,39 +436,19 @@ int main(int argc, char * argv[])
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
   RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
+  if (!calibrate_cam->load_calib) {
+    calibrate_cam->takeCalibrationSamples();
+    calibrate_cam->estimateTransformPointToPoint();
+  } else {
+    calibrate_cam->loadCalibFromFile();
+  }
   
-  const Eigen::Vector3f a(1, 2, 3);
-  const Eigen::Quaternionf b(1, 2, 3, 4);
+  RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
+  if (calibrate_cam->verify_calib) {
+    calibrate_cam->verifyCalibration(1);
+  }
 
-  // Testing Function
-  calibrate_cam->loadCalibFromFile();
-
-
-  // rclcpp::spin(calibrate_cam);
-  // tf2::Transform tf_MarkerToWorld;
-  // geometry_msgs::msg::Pose marker_pose;
-
-  // Do while ok() 
-
-
-  // Testing Eigen variables
-  // std::cout << calibrate_cam->samples_camToMarker.rows() << " " << calibrate_cam->samples_camToMarker.cols() << "\n";
-  // std::cout << calibrate_cam->samples_markerToWorld.rows() << " " << calibrate_cam->samples_markerToWorld.cols() << "\n";
-
-  // calibrate_cam->samples_markerToWorld.col(0) = Eigen::Vector3f(1, 2, 3).transpose();
-  // calibrate_cam->samples_camToMarker.col(0) = Eigen::Vector3f(4, 5, 3).transpose();
-
-  // std::cout << calibrate_cam->samples_markerToWorld.col(0);
-  // std::cout << calibrate_cam->samples_camToMarker.col(0);
-
-
-  // This works for query one message
-  // auto message = std_msgs::msg::String();
-  // bool found = rclcpp::wait_for_message(message, std::make_shared<MinimalPublisher>(), "chatter", std::chrono::seconds(1));
-  // RCLCPP_INFO(calibrate_cam->get_logger(), "scan found= %d", found);
-  // RCLCPP_INFO(calibrate_cam->get_logger(), "Text found: %s", message.data.c_str());
-
-
+  
   // End execution
   rclcpp::shutdown();
   return 0;
