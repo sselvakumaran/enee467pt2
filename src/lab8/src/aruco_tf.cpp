@@ -211,7 +211,42 @@ void ArucoTF::loadCalibFromFile() {
   }
 }
 
-// Remove setTFCamToWorld Fn
+
+// ## Needs testing
+/**
+ * @brief Function to get transform from source to destination given 3D point
+ * correspondences.
+ * 
+ */
+void ArucoTF::estimateTransformPointToPoint() {
+  // Compute transform
+  Eigen::Matrix4f tf_srcToDst = Eigen::Matrix4f::Zero();
+  RCLCPP_INFO(this->get_logger(), "Calibrating camera to world");
+  tf_srcToDst = Eigen::umeyama(ArucoTF::samples_camToMarker,
+                               ArucoTF::samples_markerToWorld);
+
+  // Get rotation
+  Eigen::Matrix3f rot = tf_srcToDst.topLeftCorner(3, 3);
+  Eigen::Quaternionf rot_quat(rot);
+  tf2::Quaternion rot_quat_camToWorld(rot_quat.x(), rot_quat.y(), rot_quat.z(),
+                                      rot_quat.w());
+
+  // Get translation
+  Eigen::Vector3f trans = tf_srcToDst.topRightCorner(3, 1);
+  tf2::Vector3 trans_camToWorld(trans(0), trans(1), trans(2));
+
+  // Convert to tf2
+  ArucoTF::tf_camToWorld.setRotation(rot_quat_camToWorld);
+  ArucoTF::tf_camToWorld.setOrigin(trans_camToWorld);
+
+  // Save data to file
+  ArucoTF::saveCalibToFile(rot_quat, trans);
+
+  // Set calibrated
+  ArucoTF::calib = true;
+}
+
+
 
 /**
  * @brief Main function
