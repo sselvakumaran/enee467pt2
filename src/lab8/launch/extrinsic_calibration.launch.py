@@ -30,7 +30,7 @@ def generate_launch_description():
         name='launch_calibration', default_value=launch_calibration_var
     )
 
-    aruco_tracker_var = LaunchConfiguration('aruco_tracker_var', default='false')
+    aruco_tracker_var = LaunchConfiguration('aruco_tracker_var', default='False')
     aruco_tracker = DeclareLaunchArgument(
         name='aruco_tracker', default_value=aruco_tracker_var
     )

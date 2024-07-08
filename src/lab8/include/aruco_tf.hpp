@@ -217,7 +217,7 @@ class ArucoTF : public rclcpp::Node{
   std::shared_ptr<tf2_ros::TransformListener> ls_markerToWorld{nullptr};
 
   // Marker used for calibration
-  const int aruco_calib_target = 1;
+  const int aruco_calib_target = 0;
   // Markers used for tracking
   const std::vector<int> aruco_track_targets = {0, 1, 2, 3, 4, 5};
   // Check if calibration done#include "../include/aruco_tf.hpp"

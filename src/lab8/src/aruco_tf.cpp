@@ -1,4 +1,5 @@
 #include "../include/aruco_tf.hpp"
+#include <rclcpp/logging.hpp>
 
 
 using namespace std::chrono_literals;
@@ -197,7 +198,6 @@ void ArucoTF::estimateTransformPointToPoint() {
 }
 
 
-// ## Needs testing
 /**
  * @brief Function to get marker pose in camera coordinates
  * Sets class variable with returned value
@@ -207,9 +207,10 @@ void ArucoTF::lookup_camToMarker() {
   RCLCPP_INFO(this->get_logger(), "Getting aruco transform");
 
   auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
-  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detections", std::chrono::seconds(1));
 
   if (found){
+    RCLCPP_INFO(this->get_logger(), "Marker found");
     for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
         if (marker.marker_id == aruco_calib_target) {
           ArucoTF::tform_camToMarker = marker.pose;
@@ -219,7 +220,6 @@ void ArucoTF::lookup_camToMarker() {
 }
 
 
-// ## Needs testing
 /**
  * @brief Function to get marker pose in camera coordinates
  * 
@@ -230,15 +230,28 @@ geometry_msgs::msg::Pose ArucoTF::lookup_camToMarker(const int &marker_id) {
   RCLCPP_INFO(this->get_logger(), "Getting aruco transform for Marker %i", marker_id);
 
   auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
-  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detections", std::chrono::seconds(1));
 
   if (found){
+    RCLCPP_INFO(this->get_logger(), "Marker found");
     for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
         if (marker.marker_id == aruco_calib_target) {
-          ArucoTF::tform_camToMarker = marker.pose;
+          return marker.pose;
         }
       }
   }
+  
+  RCLCPP_ERROR(this->get_logger(), "Failed to find marker");
+  geometry_msgs::msg::Pose error_pose;
+  error_pose.position.x = 0;
+  error_pose.position.y = 0;
+  error_pose.position.z = 0;
+  error_pose.orientation.w = 1;
+  error_pose.orientation.x = 0;
+  error_pose.orientation.y = 0;
+  error_pose.orientation.z = 0;
+
+  return error_pose;
 }
 
 
@@ -287,10 +300,11 @@ void ArucoTF::broadcast_camToWorld() {
 void ArucoTF::broadcast_allMarkersToWorld() {
 
   auto aruco_msg = aruco_opencv_msgs::msg::ArucoDetection();
-  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detection", std::chrono::seconds(1));
+  bool found = rclcpp::wait_for_message(aruco_msg, std::make_shared<ArucoTF>(), "aruco_detections", std::chrono::seconds(1));
 
   // Lookup all markers
   if (found) {
+    RCLCPP_INFO(this->get_logger(), "Marker found");
     for (aruco_opencv_msgs::msg::MarkerPose marker : aruco_msg.markers) {
       // Check if marker id is in the list
       if (std::count(ArucoTF::aruco_track_targets.begin(), ArucoTF::aruco_track_targets.end(), marker.marker_id)) {
@@ -342,7 +356,6 @@ void ArucoTF::lookup_allMarkersToWorld(const int &marker_id,
 }
 
 
-// ## Needs testing
 /**
  * @brief Function to take samples of camera to marker and marker to world poses from robot
  * 
@@ -381,7 +394,6 @@ void ArucoTF::takeCalibrationSamples() {
 }
 
 
-// ## Need testing
 /**
  * @brief Compare calibration marker to ideal transformation
  *
@@ -391,6 +403,8 @@ void ArucoTF::verifyCalibration(const int &marker_id) {
   int sample_cnt = 0;
   RCLCPP_INFO_STREAM(this->get_logger(), "Move robot to pose...");
   RCLCPP_INFO_STREAM(this->get_logger(), "Press ENTER to record sample.");
+
+  RCLCPP_INFO(this->get_logger(), "Marker ID %i", marker_id);
 
   while (sample_cnt < ArucoTF::num_samples) {
     RCLCPP_INFO_STREAM(this->get_logger(), "Pose: " << sample_cnt + 1 << "/"
