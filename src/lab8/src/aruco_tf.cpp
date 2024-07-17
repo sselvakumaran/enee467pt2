@@ -1,5 +1,6 @@
 #include "../include/aruco_tf.hpp"
 #include <rclcpp/logging.hpp>
+#include <tf2/time.h>
 
 
 using namespace std::chrono_literals;
@@ -7,7 +8,7 @@ using namespace std::chrono_literals;
 // ArucoTF Functions
 /**
  * @brief Function to save calibration data to file
- * 
+ *
  * @param save_rot Rotation extrinsic
  * @param save_trans Translation extrinsic
  */
@@ -86,7 +87,7 @@ void ArucoTF::saveCalibToFile(const Eigen::Quaternionf &save_rot, const Eigen::V
 
 /**
  * @brief Function to load calibration data from file
- * 
+ *
  */
 void ArucoTF::loadCalibFromFile() {
   if (!ArucoTF::calib) {
@@ -151,7 +152,7 @@ void ArucoTF::loadCalibFromFile() {
       // Convert to tf2
       ArucoTF::tf_camToWorld.setRotation(rot_quat_camToWorld);
       ArucoTF::tf_camToWorld.setOrigin(trans_camToWorld);
-      
+
       // Set calibrated
       ArucoTF::calib = true;
     } else {
@@ -167,7 +168,7 @@ void ArucoTF::loadCalibFromFile() {
 /**
  * @brief Function to get transform from source to destination given 3D point
  * correspondences.
- * 
+ *
  */
 void ArucoTF::estimateTransformPointToPoint() {
   // Compute transform
@@ -201,7 +202,7 @@ void ArucoTF::estimateTransformPointToPoint() {
 /**
  * @brief Function to get marker pose in camera coordinates
  * Sets class variable with returned value
- * 
+ *
  */
 void ArucoTF::lookup_camToMarker() {
   RCLCPP_INFO(this->get_logger(), "Getting aruco transform");
@@ -222,7 +223,7 @@ void ArucoTF::lookup_camToMarker() {
 
 /**
  * @brief Function to get marker pose in camera coordinates
- * 
+ *
  * @param marker_id Overload marker_id
  * @return geometry_msgs::Transform - transform from target fram to source
  */
@@ -240,7 +241,7 @@ geometry_msgs::msg::Pose ArucoTF::lookup_camToMarker(const int &marker_id) {
         }
       }
   }
-  
+
   RCLCPP_ERROR(this->get_logger(), "Failed to find marker");
   geometry_msgs::msg::Pose error_pose;
   error_pose.position.x = 0;
@@ -259,7 +260,7 @@ geometry_msgs::msg::Pose ArucoTF::lookup_camToMarker(const int &marker_id) {
 /**
  * @brief Function to get transform from tool0 to world frame
  * The marker is placed at the tool0 location on the robot lookupTransform goes to target frame from source
- * 
+ *
  */
 void ArucoTF::lookup_markerToWorld() {
   // TF2 listener for marker to world
@@ -325,7 +326,7 @@ void ArucoTF::broadcast_allMarkersToWorld() {
         tform_newMarkerToWorld.child_frame_id = "marker_" + std::to_string(marker.marker_id);
         tform_newMarkerToWorld.transform = tf2::toMsg(tf_newMarkerToWorld);
 
-        ArucoTF::br_markersToWorld->sendTransform(tform_newMarkerToWorld);          
+        ArucoTF::br_markersToWorld->sendTransform(tform_newMarkerToWorld);
       }
     }
   }
@@ -358,7 +359,7 @@ void ArucoTF::lookup_allMarkersToWorld(const int &marker_id,
 
 /**
  * @brief Function to take samples of camera to marker and marker to world poses from robot
- * 
+ *
  */
 void ArucoTF::takeCalibrationSamples() {
   if (ArucoTF::calib) {
@@ -369,7 +370,7 @@ void ArucoTF::takeCalibrationSamples() {
   int sample_cnt = 0;
   RCLCPP_INFO(this->get_logger(), "Move robot to pose...");
   RCLCPP_INFO(this->get_logger(), "Press ENTER to record sample.");
-  
+
   while (sample_cnt < num_samples) {
     RCLCPP_INFO(this->get_logger(), "Pose: %i/%i", sample_cnt + 1, ArucoTF::num_samples);
     getchar();
@@ -436,10 +437,10 @@ void ArucoTF::verifyCalibration(const int &marker_id) {
 
 /**
  * @brief Main function
- * 
- * @param argc 
- * @param argv 
- * @return int 
+ *
+ * @param argc
+ * @param argv
+ * @return int
  */
 int main(int argc, char * argv[])
 {
@@ -449,6 +450,26 @@ int main(int argc, char * argv[])
 
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
+  // testing
+  try{
+    RCLCPP_INFO(calibrate_cam->get_logger(), "Trying BufferCore");
+    calibrate_cam->tfBufferCore->lookupTransform("tool0", "base_link", tf2::TimePointZero);
+  }
+  catch(...){
+    RCLCPP_INFO(calibrate_cam->get_logger(), "Failed BufferCore");
+  }
+  try{
+    RCLCPP_INFO(calibrate_cam->get_logger(), "Trying Buffer Only");
+    calibrate_cam->tfBuffer->lookupTransform("tool0", "base_link", tf2::TimePointZero);
+  }
+  catch (...){
+    RCLCPP_INFO(calibrate_cam->get_logger(), "Failed Buffer Only");
+  }
+  // testing end
+
+  std::string framesInTf = calibrate_cam->tfBuffer->allFramesAsString();
+  RCLCPP_INFO(calibrate_cam->get_logger(), framesInTf.c_str());
+
   RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
   if (!calibrate_cam->load_calib) {
     calibrate_cam->takeCalibrationSamples();
@@ -456,13 +477,13 @@ int main(int argc, char * argv[])
   } else {
     calibrate_cam->loadCalibFromFile();
   }
-  
+
   RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
   if (calibrate_cam->verify_calib) {
     calibrate_cam->verifyCalibration(1);
   }
 
-  
+
   // End execution
   rclcpp::shutdown();
   return 0;

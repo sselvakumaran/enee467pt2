@@ -47,6 +47,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Transform.h>
+#include <tf2/buffer_core.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -140,6 +141,10 @@ class ArucoTF : public rclcpp::Node{
       br_camToWorld = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
       aruco_transform_topic =
           "/aruco_detections";
+
+      // testing
+      tfBufferCore = std::make_unique<tf2::BufferCore>();
+      bufferCoreListener = std::make_shared<tf2_ros::TransformListener>(*tfBufferCore);
     }
 
   /**
@@ -215,6 +220,10 @@ class ArucoTF : public rclcpp::Node{
   // TF2 buffer
   std::unique_ptr<tf2_ros::Buffer> tfBuffer;
   std::shared_ptr<tf2_ros::TransformListener> ls_markerToWorld{nullptr};
+
+  //TF2 Buffer Core testing
+  std::unique_ptr<tf2::BufferCore> tfBufferCore;
+  std::shared_ptr<tf2_ros::TransformListener> bufferCoreListener{nullptr};
 
   // Marker used for calibration
   const int aruco_calib_target = 0;
