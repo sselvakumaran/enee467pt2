@@ -20,6 +20,8 @@ set(PACKAGE_DEPENDENCIES
   aruco_opencv_msgs
 
   ament_index_cpp
+
+  turtlesim
 )
 
 find_package(rosidl_default_generators REQUIRED)
@@ -43,8 +45,30 @@ target_include_directories(aruco_tf
     $<INSTALL_INTERFACE:include>
 )
 
+add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
+ament_target_dependencies(
+    turtle_tf2_broadcaster
+    geometry_msgs
+    rclcpp
+    tf2
+    tf2_ros
+    turtlesim
+)
+
+add_executable(turtle_tf2_listener src/turtle_tf2_listener.cpp)
+ament_target_dependencies(
+    turtle_tf2_listener
+    geometry_msgs
+    rclcpp
+    tf2
+    tf2_ros
+    turtlesim
+)
+
 install(TARGETS
   aruco_tf
+  turtle_tf2_broadcaster
+  turtle_tf2_listener
   DESTINATION lib/${PROJECT_NAME}
 )
 
