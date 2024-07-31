@@ -9,7 +9,7 @@
 # Setup UR robot
 ```bash
 # UR robot bringup
-  ros2 launch ur_robot_driver ur3e.launch.py robot_ip:=<Add the ip address>
+  ros2 launch ur_robot_driver ur3e.launch.py robot_ip:=192.168.77.22
 ```
 
 
