@@ -1,6 +1,7 @@
 #include "../include/aruco_tf.hpp"
 #include <rclcpp/logging.hpp>
 #include <tf2/time.h>
+#include <unistd.h>
 
 
 using namespace std::chrono_literals;
@@ -265,10 +266,11 @@ geometry_msgs::msg::Pose ArucoTF::lookup_camToMarker(const int &marker_id) {
 void ArucoTF::lookup_markerToWorld() {
   // TF2 listener for marker to world
   try {
-    if (ArucoTF::tfBuffer->canTransform("base_link", "tool0", rclcpp::Time(0))) {
+    if (ArucoTF::tfBuffer->canTransform("tool0", "base_link", tf2::TimePointZero)) {
       RCLCPP_INFO(this->get_logger(), "Getting tool0 to world");
       ArucoTF::tform_markerToWorld =
-          tfBuffer->lookupTransform("base_link", "tool0", rclcpp::Time(0));
+          tfBuffer->lookupTransform("tool0", "base_link", tf2::TimePointZero);
+          RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", tform_markerToWorld.transform.translation.x, tform_markerToWorld.transform.translation.y, tform_markerToWorld.transform.translation.z);
     } else {
       ArucoTF::tform_markerToWorld = geometry_msgs::msg::TransformStamped();
       RCLCPP_INFO(this->get_logger(), "Could not find transform from world to tool0");
@@ -450,25 +452,8 @@ int main(int argc, char * argv[])
 
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
-  // testing
-  try{
-    RCLCPP_INFO(calibrate_cam->get_logger(), "Trying BufferCore");
-    calibrate_cam->tfBufferCore->lookupTransform("tool0", "base_link", tf2::TimePointZero);
-  }
-  catch(...){
-    RCLCPP_INFO(calibrate_cam->get_logger(), "Failed BufferCore");
-  }
-  try{
-    RCLCPP_INFO(calibrate_cam->get_logger(), "Trying Buffer Only");
-    calibrate_cam->tfBuffer->lookupTransform("tool0", "base_link", tf2::TimePointZero);
-  }
-  catch (...){
-    RCLCPP_INFO(calibrate_cam->get_logger(), "Failed Buffer Only");
-  }
-  // testing end
-
-  std::string framesInTf = calibrate_cam->tfBuffer->allFramesAsString();
-  RCLCPP_INFO(calibrate_cam->get_logger(), framesInTf.c_str());
+  RCLCPP(calibrate_cam->get_logger(), "Setting up application, Please wait");
+  sleep(5);
 
   RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
   if (!calibrate_cam->load_calib) {
