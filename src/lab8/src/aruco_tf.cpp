@@ -452,7 +452,7 @@ int main(int argc, char * argv[])
 
   auto calibrate_cam = std::make_shared<ArucoTF>();
 
-  RCLCPP(calibrate_cam->get_logger(), "Setting up application, Please wait");
+  RCLCPP_INFO(calibrate_cam->get_logger(), "Setting up application, Please wait");
   sleep(5);
 
   RCLCPP_INFO(calibrate_cam->get_logger(), "------------------------------------------------------");
