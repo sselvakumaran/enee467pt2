@@ -117,6 +117,13 @@ Run the follwoing commands,
 to make sure that the connection was established successfuly and you have access to ROS topics.
 If the output displays many names ending with / the robot startup is successful.
 
+### Additional Verification
+First ensure that the program is running on the robot, this can be verified by running the command as below.
+```bash
+# Test robot controllers
+  ros2 launch ur_robot_driver test_scaled_joint_trajectory_controller.launch.py
+```
+
 ### Run the Execution Script on the UR3e Robot
 Ask your TA to help launch the `ur3e_ros` program on the UR3e tablet. Note, at this point you are controlling the arm from your computer. The terminal with ROS drivers should print the following text `Robot connected to reverse interface. Ready to receive control commands.`
 
