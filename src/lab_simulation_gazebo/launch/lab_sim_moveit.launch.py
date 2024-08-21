@@ -27,6 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # Author: Denis Stogl
+from launch.event_handlers import OnProcessExit, OnExecutionComplete, OnProcessStart
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler, ExecuteProcess, DeclareLaunchArgument, OpaqueFunction
+from launch_ros.actions import Node
+from moveit_configs_utils import MoveItConfigsBuilder
+from pathlib import Path
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
@@ -85,7 +90,7 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_launch = [
         ur_control_launch,
-        ur_moveit_launch,
+        ur_moveit_launch
     ]
 
     return nodes_to_launch

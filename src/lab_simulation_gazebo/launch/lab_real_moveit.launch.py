@@ -49,22 +49,6 @@ def launch_setup(context, *args, **kwargs):
     moveit_config_file = LaunchConfiguration("moveit_config_file")
     prefix = LaunchConfiguration("prefix")
 
-    ur_control_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare("lab_simulation_gazebo"), "/launch", "/lab_sim_control.launch.py"]
-        ),
-        launch_arguments={
-            "ur_type": ur_type,
-            "safety_limits": safety_limits,
-            "runtime_config_package": runtime_config_package,
-            "controllers_file": controllers_file,
-            "description_package": description_package,
-            "description_file": description_file,
-            "prefix": prefix,
-            "launch_rviz": "false",
-        }.items(),
-    )
-
     ur_moveit_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [FindPackageShare("ur_moveit_config"), "/launch", "/ur_moveit.launch.py"]
@@ -84,7 +68,6 @@ def launch_setup(context, *args, **kwargs):
     )
 
     nodes_to_launch = [
-        # ur_control_launch,
         ur_moveit_launch,
     ]
 
