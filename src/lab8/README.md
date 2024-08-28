@@ -18,6 +18,8 @@ To get started with the lab, follow the steps and commands as listed below.
 ```bash
 # Add command to git clone
   git clone git@github.com:ENEE467/lab-workspace.git
+# Or
+  git clone https://github.com/ENEE467/lab-workspace.git
 # Command to get proper branch
   git checkout work-in-progress-2
 ```
