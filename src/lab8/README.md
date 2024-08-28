@@ -38,7 +38,10 @@ To get started with the lab, follow the steps and commands as listed below.
 
 5. Reopen the project within a Docker container by followoing the steps below.
 
-images
+![Button](https://github.com/user-attachments/assets/8b97031b-76cd-4e50-bfe9-cd43516a48bd)
+
+![OpenContainer](https://github.com/user-attachments/assets/37036b3f-f063-4390-9b5b-98f3610e96e4)
+
 
 6. Setup the environment with the required dependencies. This might take a few minutes.
 ```bash
