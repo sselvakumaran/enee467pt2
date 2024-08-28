@@ -36,11 +36,12 @@ To get started with the lab, follow the steps and commands as listed below.
   code .
 ```
 
-5. Reopen the project within a Docker container by following the steps below.
+5. Reopen the project within a Docker container by following the steps below. The red arrows can be used as reference.
 
 ![Button](https://github.com/user-attachments/assets/8b97031b-76cd-4e50-bfe9-cd43516a48bd)
 
-![OpenContainer](https://github.com/user-attachments/assets/37036b3f-f063-4390-9b5b-98f3610e96e4)
+![OpenContainer](https://github.com/user-attachments/assets/1c07adcc-6073-4a8e-b86a-1a6a2b4376f8)
+
 
 
 6. Setup the environment with the required dependencies. This might take a few minutes.
