@@ -36,7 +36,7 @@ To get started with the lab, follow the steps and commands as listed below.
   code .
 ```
 
-5. Reopen the project within a Docker container by followoing the steps below.
+5. Reopen the project within a Docker container by following the steps below.
 
 ![Button](https://github.com/user-attachments/assets/8b97031b-76cd-4e50-bfe9-cd43516a48bd)
 
