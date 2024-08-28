@@ -16,13 +16,16 @@ To get started with the lab, follow the steps and commands as listed below.
 
 2. Clone the GitHub repository - Open a terminal and run the following command,
 ```bash
-# Add command to git clone lab7
+# Add command to git clone
+  git clone git@github.com:ENEE467/lab-workspace.git
+# Command to get proper branch
+  git checkout work-in-progress-2
 ```
 
 3. Navigate into the cloned directory.
 ```bash
 # Change directory
-  cd <Add name of dir>
+  cd lab-workspace
 ```
 
 4. Open the project in Visual Studio Code to start editing.
