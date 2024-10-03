@@ -20,8 +20,6 @@ set(PACKAGE_DEPENDENCIES
   aruco_opencv_msgs
 
   ament_index_cpp
-
-  turtlesim
 )
 
 find_package(rosidl_default_generators REQUIRED)
@@ -32,10 +30,10 @@ foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
 endforeach()
 
 # Create clangd compilation
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Enable compile_commmands
-execute_process(COMMAND cmake -E create_symlink
-                "${PROJECT_BINARY_DIR}/compile_commands.json"
-                "${PROJECT_SOURCE_DIR}/compile_commands.json")
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Enable compile_commmands
+# execute_process(COMMAND cmake -E create_symlink
+#                 "${PROJECT_BINARY_DIR}/compile_commands.json"
+#                 "${PROJECT_SOURCE_DIR}/compile_commands.json")
 
 add_executable(aruco_tf src/aruco_tf.cpp)
 ament_target_dependencies(aruco_tf ${PACKAGE_DEPENDENCIES})
@@ -45,30 +43,30 @@ target_include_directories(aruco_tf
     $<INSTALL_INTERFACE:include>
 )
 
-add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
-ament_target_dependencies(
-    turtle_tf2_broadcaster
-    geometry_msgs
-    rclcpp
-    tf2
-    tf2_ros
-    turtlesim
-)
+# add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
+# ament_target_dependencies(
+#     turtle_tf2_broadcaster
+#     geometry_msgs
+#     rclcpp
+#     tf2
+#     tf2_ros
+#     turtlesim
+# )
 
-add_executable(turtle_tf2_listener src/turtle_tf2_listener.cpp)
-ament_target_dependencies(
-    turtle_tf2_listener
-    geometry_msgs
-    rclcpp
-    tf2
-    tf2_ros
-    turtlesim
-)
+# add_executable(turtle_tf2_listener src/turtle_tf2_listener.cpp)
+# ament_target_dependencies(
+#     turtle_tf2_listener
+#     geometry_msgs
+#     rclcpp
+#     tf2
+#     tf2_ros
+#     turtlesim
+# )
 
 install(TARGETS
   aruco_tf
-  turtle_tf2_broadcaster
-  turtle_tf2_listener
+  # turtle_tf2_broadcaster
+  # turtle_tf2_listener
   DESTINATION lib/${PROJECT_NAME}
 )
 
