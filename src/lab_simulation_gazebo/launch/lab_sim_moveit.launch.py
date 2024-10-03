@@ -27,11 +27,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # Author: Denis Stogl
-from launch.event_handlers import OnProcessExit, OnExecutionComplete, OnProcessStart
-from launch.actions import IncludeLaunchDescription, RegisterEventHandler, ExecuteProcess, DeclareLaunchArgument, OpaqueFunction
-from launch_ros.actions import Node
-from moveit_configs_utils import MoveItConfigsBuilder
-from pathlib import Path
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
@@ -54,7 +49,7 @@ def launch_setup(context, *args, **kwargs):
     moveit_config_file = LaunchConfiguration("moveit_config_file")
     prefix = LaunchConfiguration("prefix")
 
-    ur_control_launch = IncludeLaunchDescription(
+    lab_control_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [FindPackageShare("lab_simulation_gazebo"), "/launch", "/lab_sim_control.launch.py"]
         ),
@@ -70,9 +65,9 @@ def launch_setup(context, *args, **kwargs):
         }.items(),
     )
 
-    ur_moveit_launch = IncludeLaunchDescription(
+    lab_moveit_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("ur_moveit_config"), "/launch", "/ur_moveit.launch.py"]
+            [FindPackageShare("lab_moveit_config"), "/launch", "/lab_moveit.launch.py"]
         ),
         launch_arguments={
             "ur_type": ur_type,
@@ -82,15 +77,16 @@ def launch_setup(context, *args, **kwargs):
             "moveit_config_package": moveit_config_package,
             "moveit_config_file": moveit_config_file,
             "prefix": prefix,
+            "publish_robot_description_semantic": "True",
             "use_sim_time": "true",
-            "launch_rviz": "true",
+            "launch_rviz": 'true',
             "use_fake_hardware": "true",  # to change moveit default controller to joint_trajectory_controller
         }.items(),
     )
 
     nodes_to_launch = [
-        ur_control_launch,
-        ur_moveit_launch
+        lab_control_launch,
+        lab_moveit_launch,
     ]
 
     return nodes_to_launch
@@ -103,7 +99,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "ur_type",
             description="Type/series of used UR robot.",
-            choices=["ur3", "ur3e", "ur5", "ur5e", "ur10", "ur10e", "ur16e"],
+            choices=["ur3", "ur3e", "ur5", "ur5e", "ur10", "ur10e", "ur16e", "ur20", "ur30"],
             default_value="ur5e",
         )
     )
