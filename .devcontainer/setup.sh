@@ -47,6 +47,9 @@ sudo cmake --install build/system
 
 # Move to workspace root directory and clean up matplot++ source files
 cd $ROS_WS && rm -rf matplotplusplus
+
+# Install some ROS Packages
+sudo apt update && sudo apt install -y --no-install-recommends \
   ros-humble-ur \
   ros-humble-gazebo-ros-pkgs \
   ros-humble-moveit \
@@ -55,10 +58,24 @@ cd $ROS_WS && rm -rf matplotplusplus
   ros-humble-usb-cam \
   ros-humble-aruco-opencv
 
-# git clone -b humble https://github.com/UniversalRobots/Universal_Robots_ROS2_Gazebo_Simulation.git src/Universal_Robots_ROS2_Gazebo_Simulation
-
 # Install package dependencies
 rosdep update && rosdep install --from-paths src -y --ignore-src
+
+# Clean up previous workspace build artifacts if they exist
+if [ -d build ]
+then
+  rm -r build
+fi
+
+if [ -d install ]
+then
+  rm -r install
+fi
+
+if [ -d log ]
+then
+  rm -r log
+fi
 
 # Build the workspace
 colcon build --symlink-install
