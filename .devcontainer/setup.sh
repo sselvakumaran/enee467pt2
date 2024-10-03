@@ -3,10 +3,36 @@
 set -e
 
 # Enable permission for webcam
-sudo usermod -aG video 467-terp
+# Install matplot++ dependencies
+sudo apt update && sudo apt install -y \
+  libjpeg-dev \
+  libpng-dev \
+  libtiff-dev \
+  gnuplot \
+  zlib1g-dev \
+  libblas-dev \
+  liblapack-dev
 
-# Setup ROS Packages
-sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+# Install matplot++
+if [ ! -d matplotplusplus ]
+then
+  git clone https://github.com/alandefreitas/matplotplusplus.git
+fi
+
+cd matplotplusplus
+
+if [ -d build ]
+then
+  rm -rf build
+fi
+
+# Build the library and install it
+cmake --preset=system
+cmake --build --preset=system
+sudo cmake --install build/system
+
+# Move to workspace root directory and clean up matplot++ source files
+cd $ROS_WS && rm -rf matplotplusplus
   ros-humble-ur \
   ros-humble-gazebo-ros-pkgs \
   ros-humble-moveit \
