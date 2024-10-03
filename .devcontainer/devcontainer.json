@@ -33,6 +33,8 @@
     "--group-add=video"
 	],
 
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
   // Environment variables in the container
 	"containerEnv": {
 		"DISPLAY": "${localEnv:DISPLAY}", // Needed for GUI try ":0" for windows
