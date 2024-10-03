@@ -2,15 +2,10 @@
   "configurations": [
       {
           "name": "Linux",
-          "includePath": [
-              "/opt/ros/humble/include/**",
-              "/home/467-terp/467-ws/**",
-              "/usr/include/**"
-          ],
-          "defines": [],
+          "compileCommands": "build/compile_commands.json",
           "compilerPath": "/usr/bin/gcc",
           "cStandard": "c17",
-          "cppStandard": "gnu++14",
+          "cppStandard": "gnu++17",
           "intelliSenseMode": "linux-gcc-x64"
       }
   ],
