@@ -102,7 +102,7 @@
     script_sender_port="$(arg script_sender_port)"
     trajectory_port="$(arg trajectory_port)"
     >
-    <origin xyz="0 0 0" rpy="0 0 0" />          <!-- robot position (relative to table in this case) -->
+    <origin xyz="0 0 0" rpy="0 0 -1.5708" />          <!-- robot position (relative to table in this case) -->
   </xacro:ur_robot>
 
   <xacro:if value="$(arg sim_gazebo)">
