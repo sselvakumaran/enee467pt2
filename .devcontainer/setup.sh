@@ -79,3 +79,12 @@ fi
 
 # Build the workspace
 colcon build --symlink-install
+
+# Set the workspace directory as an environment variable if it doesn't exist
+if [ -z $ROS_WS ]; then echo "export ROS_WS=$PWD" >> ~/.bashrc; fi
+
+# Always source the workspace and start a new session in the workspace root.
+echo "if [ -f $ROS_WS/install/setup.bash ]; then source $ROS_WS/install/setup.bash; fi" >> ~/.bashrc
+echo "if [ -d $ROS_WS ]; then cd $ROS_WS; fi" >> ~/.bashrc
+
+printf "\nSetup complete, workspace is now ready to use! \n"
