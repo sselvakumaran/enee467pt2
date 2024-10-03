@@ -30,6 +30,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
   && apt-get install -y sudo \
   && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
   && chmod 0440 /etc/sudoers.d/$USERNAME \
+  && printf "\nif [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
+
 # Extended stage for Nvidia GPU support (Requires NVIDIA Container Toolkit)
 FROM base as nvidia
 
