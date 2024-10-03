@@ -47,6 +47,30 @@
 	// Set *default* container specific settings.json values on container create.
 	"customizations": {
 		"vscode": {
+			"settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+				"cmake.configureOnOpen": false,
+
+        "python.analysis.extraPaths": [
+					"/opt/ros/humble/lib/python3.10/site-packages",
+					"/opt/ros/humble/local/lib/python3.10/site-packages"
+				],
+
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
+				"C_Cpp.formatting": "disabled",
+				"C_Cpp.default.compilerPath": "/usr/bin/gcc",
+
+        "ros.distro": "humble",
+
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/bower_components": true,
+          "**/*.code-search": true,
+          "**/build": true,
+          "**/install": true,
+          "**/log": true
+        }
+			},
 			"extensions": [
 				"ms-vscode.cpptools",
 				"ms-vscode.cpptools-extension-pack",
