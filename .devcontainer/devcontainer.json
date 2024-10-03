@@ -1,7 +1,4 @@
-// GPU agnostic devcontainer setup.
-// This can be used on any computer without GPU acceleration
 {
-	"dockerFile": "Dockerfile",
 	"remoteUser": "467-terp",
 	"workspaceMount": "source=${localEnv:HOME}/${localWorkspaceFolderBasename},target=/home/467-terp/${localWorkspaceFolderBasename},type=bind",
 	"workspaceFolder": "/home/467-terp/${localWorkspaceFolderBasename}",
