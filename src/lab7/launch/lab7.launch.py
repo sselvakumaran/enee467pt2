@@ -1,131 +1,60 @@
-import os
-from launch_ros.actions import Node
-
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, GroupAction
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, FindExecutable, Command
 from launch_ros.substitutions import FindPackageShare
-from moveit_configs_utils import MoveItConfigsBuilder
-
-from ament_index_python.packages import get_package_share_directory
-
-
-# joint_limit_params = PathJoinSubstitution(
-#     [FindPackageShare("lab_description"), "config", "ur3e", "joint_limits.yaml"]
-# )
-# kinematics_params = PathJoinSubstitution(
-#     [FindPackageShare("lab_description"), "config", "ur3e", "default_kinematics.yaml"]
-# )
-# physical_params = PathJoinSubstitution(
-#     [FindPackageShare("lab_description"), "config", "ur3e", "physical_parameters.yaml"]
-# )
-# visual_params = PathJoinSubstitution(
-#     [FindPackageShare("lab_description"), "config", "ur3e", "visual_parameters.yaml"]
-# )
-# robot_description_content = Command(
-#     [
-#         PathJoinSubstitution([FindExecutable(name="xacro")]),
-#         " ",
-#         PathJoinSubstitution([FindPackageShare("lab_description"), "urdf", "lab.urdf.xacro"]),
-#         " ",
-#         "robot_ip:=xxx.yyy.zzz.www",
-#         " ",
-#         "joint_limit_params:=",
-#         joint_limit_params,
-#         " ",
-#         "kinematics_params:=",
-#         kinematics_params,
-#         " ",
-#         "physical_params:=",
-#         physical_params,
-#         " ",
-#         "visual_params:=",
-#         visual_params,
-#         " ",
-#         "safety_limits:=",
-#         "true",
-#         " ",
-#         "safety_pos_margin:=",
-#         "0.15",
-#         " ",
-#         "safety_k_position:=",
-#         "20",
-#         " ",
-#         "name:=",
-#         "ur",
-#         " ",
-#         "ur_type:=",
-#         "ur3e",
-#         " ",
-#         "prefix:=",
-#         '""',
-#         " ",
-#     ]
-# )
-
-# robot_description = {"robot_description": robot_description_content}
-
-# # MoveIt Configuration
-# robot_description_semantic_content = Command(
-#     [
-#         PathJoinSubstitution([FindExecutable(name="xacro")]),
-#         " ",
-#         PathJoinSubstitution([FindPackageShare("lab_moveit_config"), "srdf", "lab.srdf.xacro"]),
-#         " ",
-#         "name:=",
-#         # Also ur_type parameter could be used but then the planning group names in yaml
-#         # configs has to be updated!
-#         "ur",
-#         " ",
-#         "prefix:=",
-#         '""',
-#         " ",
-#     ]
-# )
-# robot_description_semantic = {
-#     "robot_description_semantic": robot_description_semantic_content
-# }
+from launch.conditions import IfCondition
 
 def generate_launch_description():
-  # lab_gazebo_simulation_launch = IncludeLaunchDescription(
-  #   PythonLaunchDescriptionSource(
-  #     [FindPackageShare("lab_simulation_gazebo"), "/launch", "/lab_sim_moveit.launch.py"]
-  #   ),
-  #   launch_arguments={
-  #     "ur_type": 'ur3e',
-  #     "description_package": 'lab_description',
-  #     "description_file": 'lab.urdf.xacro',
-  #     "moveit_config_package": 'lab_moveit_config',
-  #     "moveit_config_file": 'lab.srdf.xacro',
-  #     "runtime_config_package": 'lab_simulation_gazebo',
-  #     "launch_rviz": "false",
-  #   }.items(),
-  # )
+  launch_description = LaunchDescription()
 
-  moveit_config = (
-    MoveItConfigsBuilder(
-      "lab", package_name="lab_description")
-      .robot_description(os.path.join(get_package_share_directory("lab_description"), "urdf/lab.urdf.xacro"))
-      .robot_description_semantic(os.path.join(get_package_share_directory("lab_moveit_config"), "srdf/lab.srdf.xacro"))
-      .planning_pipelines(pipelines=["ompl"])
-      .trajectory_execution(os.path.join(get_package_share_directory("lab_simulation_gazebo"), "config/ur_controllers.yaml"))
-      .to_moveit_configs()
+  simulation_arg = DeclareLaunchArgument(
+    'sim',
+    default_value='true',
+    description="Draw shapes in simulation or on the real arm"
+  )
+  launch_description.add_action(simulation_arg)
+
+  simulation_state = LaunchConfiguration('sim')
+
+  lab_gazebo_simulation = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+      [FindPackageShare("lab_simulation_gazebo"), "/launch", "/lab_sim_moveit.launch.py"]
+    ),
+    launch_arguments={
+      "ur_type": 'ur3e',
+      "description_package": 'lab_description',
+      "description_file": 'lab.urdf.xacro',
+      "moveit_config_package": 'lab_moveit_config',
+      "moveit_config_file": 'lab.srdf',
+      "runtime_config_package": 'lab_simulation_gazebo',
+      "controllers_file": 'lab_controllers.yaml',
+    }.items(),
   )
 
-  lab7_node = Node(
-    package="lab7",
-    executable="ur3e_mover",
-    output="screen",
-    parameters=[
-      moveit_config.robot_description,
-      moveit_config.robot_description_semantic,
-      moveit_config.robot_description_kinematics,
-      moveit_config.joint_limits,
-      {"use_sim_time": True},
-    ]
+  start_simulation_action = GroupAction(
+    condition=IfCondition(PythonExpression(["'", simulation_state, "' == 'true'"])),
+    actions=[lab_gazebo_simulation]
+  )
+  launch_description.add_action(start_simulation_action)
+
+  ur_driver = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+      [FindPackageShare("ur_robot_driver"), "/launch", "/ur_control.launch.py"]
+    ),
+    launch_arguments={
+      "ur_type": 'ur3e',
+      "robot_ip": '192.168.77.22',
+      "description_package": 'lab_description',
+      "description_file": 'lab.urdf.xacro',
+      "launch_rviz": 'true',
+    }.items(),
   )
 
-  nodes_to_launch = [lab7_node]
+  start_ur_driver_action = GroupAction(
+    condition=IfCondition(PythonExpression(["'", simulation_state, "' == 'false'"])),
+    actions=[ur_driver]
+  )
+  launch_description.add_action(start_ur_driver_action)
 
-  return LaunchDescription(nodes_to_launch)
+  return launch_description
