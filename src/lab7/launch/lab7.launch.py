@@ -47,13 +47,31 @@ def generate_launch_description():
       "robot_ip": '192.168.77.22',
       "description_package": 'lab_description',
       "description_file": 'lab.urdf.xacro',
-      "launch_rviz": 'true',
+      "launch_rviz": 'false',
+    }.items(),
+  )
+
+  moveit_launch_action = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        [FindPackageShare("lab_moveit_config"), "/launch", "/lab_moveit.launch.py"]
+    ),
+    launch_arguments={
+        "ur_type": 'ur3e',
+        "safety_limits": 'true',
+        "description_package": 'lab_description',
+        "description_file": 'lab.urdf.xacro',
+        "moveit_config_package": 'lab_moveit_config',
+        "moveit_config_file": 'lab.srdf',
+        "publish_robot_description_semantic": "True",
+        "use_sim_time": "false",
+        "launch_rviz": 'true',
+        "use_fake_hardware": "false",  # to change moveit default controller to joint_trajectory_controller
     }.items(),
   )
 
   start_ur_driver_action = GroupAction(
     condition=IfCondition(PythonExpression(["'", simulation_state, "' == 'false'"])),
-    actions=[ur_driver]
+    actions=[ur_driver, moveit_launch_action]
   )
   launch_description.add_action(start_ur_driver_action)
 
