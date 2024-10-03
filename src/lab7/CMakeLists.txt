@@ -31,19 +31,19 @@ foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
   find_package(${dependency} REQUIRED)
 endforeach()
 
-add_executable(ur3e_mover
-  src/ur3e_mover.cpp
+add_executable(draw_shape
+  src/ur3e_move_interface.cpp
   src/main.cpp
 )
-ament_target_dependencies(ur3e_mover ${PACKAGE_DEPENDENCIES})
-target_include_directories(ur3e_mover
+ament_target_dependencies(draw_shape ${PACKAGE_DEPENDENCIES})
+target_include_directories(draw_shape
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 install(TARGETS
-  ur3e_mover
+  draw_shape
   DESTINATION lib/${PROJECT_NAME}
 )
 
