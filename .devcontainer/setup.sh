@@ -2,7 +2,13 @@
 
 set -e
 
+source /opt/ros/$ROS_DISTRO/setup.bash
+
 # Enable permission for webcam
+sudo usermod -aG video $USER
+
+# Enable permission for display
+echo $'\nexport XAUTHORITY=$(ls /run/user/$UID/.mutter-*)' >> ~/.bashrc
 # Install matplot++ dependencies
 sudo apt update && sudo apt install -y \
   libjpeg-dev \
