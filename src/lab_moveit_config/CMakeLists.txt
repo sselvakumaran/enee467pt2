@@ -8,11 +8,6 @@ install(DIRECTORY config launch rviz srdf
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(FILES config/lab.srdf.xacro config/ur_macro.srdf.xacro config/lab.srdf
-  DESTINATION share/${PROJECT_NAME}
-)
-
-
 # Install Python modules
 ament_python_install_package(${PROJECT_NAME})
 ament_python_install_module(${PROJECT_NAME}/launch_common.py)
