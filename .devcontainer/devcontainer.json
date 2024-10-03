@@ -28,8 +28,8 @@
 		"--ipc=host",
     // "--gpus=all",  // Uncomment only for NVIDIA GPU
 		"--device=/dev/dri",
-    "--device=/dev/kfd",
-		"--device=/dev/video0",
+    // "--device=/dev/kfd",
+		// "--device=/dev/video0",
     "--group-add=video"
 	],
 
