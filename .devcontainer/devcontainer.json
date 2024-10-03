@@ -6,6 +6,19 @@
 	"workspaceMount": "source=${localEnv:HOME}/${localWorkspaceFolderBasename},target=/home/467-terp/${localWorkspaceFolderBasename},type=bind",
 	"workspaceFolder": "/home/467-terp/${localWorkspaceFolderBasename}",
 
+  // Arguments to pass while building the image
+  "build": {
+    "target": "base", // Options: base, nvidia, amd
+
+    // "args": {    // Uncomment only for AMD GPU
+		// 	"ROCM_VERSION": "5.7",
+		// 	"AMDGPU_VERSION": "5.7",
+		// 	"APT_PREF": "Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600"
+		// },
+
+    "dockerfile": "Dockerfile"
+	},
+
   // Arguments to pass while running the container
   "runArgs": [
 		"--network=host",
@@ -16,8 +29,11 @@
 		"--volume=/run/user:/run/user",
 		"--volume=/dev:/dev:rw",
 		"--ipc=host",
+    // "--gpus=all",  // Uncomment only for NVIDIA GPU
 		"--device=/dev/dri",
-		"--device=/dev/video0"
+    "--device=/dev/kfd",
+		"--device=/dev/video0",
+    "--group-add=video"
 	],
 
   // Environment variables in the container

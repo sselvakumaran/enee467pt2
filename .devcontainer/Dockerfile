@@ -1,4 +1,4 @@
-FROM ros:humble
+FROM ros:humble as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -29,6 +29,37 @@ RUN groupadd --gid $USER_GID $USERNAME \
   && apt-get install -y sudo \
   && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
   && chmod 0440 /etc/sudoers.d/$USERNAME \
-  && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
+# Extended stage for Nvidia GPU support (Requires NVIDIA Container Toolkit)
+FROM base as nvidia
+
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
+
+# Extended stage for AMD GPU support (Requires AMD ROCm software)
+FROM base as amd
+
+# Setup AMD ROCm
+ARG ROCM_VERSION=5.3
+ARG AMDGPU_VERSION=5.3
+
+ARG APT_PREF
+RUN echo "$APT_PREF" > /etc/apt/preferences.d/rocm-pin-600
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils curl libnuma-dev \
+  && curl -sL https://repo.radeon.com/rocm/rocm.gpg.key | apt-key add - \
+  && printf "deb [arch=amd64] https://repo.radeon.com/rocm/apt/$ROCM_VERSION/ jammy main" | tee /etc/apt/sources.list.d/rocm.list \
+  && printf "deb [arch=amd64] https://repo.radeon.com/amdgpu/$AMDGPU_VERSION/ubuntu jammy main" | tee /etc/apt/sources.list.d/amdgpu.list \
+  && apt-get update && apt-get install -y --no-install-recommends \
+  kmod \
+  file \
+  python3-pip \
+  # rocm-cmake \
+  # rocm-device-libs \
+  # rocm-utils \
+  rocm-dev \
+  rocm-libs && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN  groupadd -g 109 render
 
 ENV DEBIAN_FRONTEND=
