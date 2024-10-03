@@ -9,6 +9,14 @@ sudo usermod -aG video $USER
 
 # Enable permission for display
 echo $'\nexport XAUTHORITY=$(ls /run/user/$UID/.mutter-*)' >> ~/.bashrc
+
+# Check if the ROS workspace exists
+if [ ! -d $ROS_WS ]
+then
+  printf "Setup failed: ROS workspace directory not found\n"
+  exit 1
+fi
+
 # Install matplot++ dependencies
 sudo apt update && sudo apt install -y \
   libjpeg-dev \
