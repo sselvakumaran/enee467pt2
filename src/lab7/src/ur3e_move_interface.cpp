@@ -269,7 +269,7 @@ void UR3eMoveInterface::waitForMoveGroupInterface()
   if (!move_group_interface_initialized_)
     RCLCPP_INFO(this->get_logger(), "Waiting for move group interface to initialize...");
 
-  while(!move_group_interface_initialized_) {};
+  while(!move_group_interface_initialized_) {if (!rclcpp::ok()) return; };
 }
 
 bool UR3eMoveInterface::planToJointSpaceGoal(
