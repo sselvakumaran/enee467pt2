@@ -11,7 +11,7 @@ UR3eMoveInterface::UR3eMoveInterface(const rclcpp::NodeOptions& node_options)
   move_group_interface_->setMaxVelocityScalingFactor(velocity_scaling_factor_);
   move_group_interface_->setMaxAccelerationScalingFactor(acceleration_scaling_factor_);
 
-  if (move_group_interface_->startStateMonitor(5))
+  if (move_group_interface_->startStateMonitor(3))
     move_group_interface_initialized_ = true;
 
   RCLCPP_INFO(this->get_logger(), "Waiting for end-effector tracking service");
