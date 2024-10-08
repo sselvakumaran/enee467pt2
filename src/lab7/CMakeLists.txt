@@ -43,9 +43,8 @@ foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
   find_package(${dependency} REQUIRED)
 endforeach()
 
-add_executable(draw_shape
-  src/ur3e_move_interface.cpp
-  src/main.cpp
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/TrackRequest.srv"
 )
 ament_target_dependencies(draw_shape ${PACKAGE_DEPENDENCIES})
 target_include_directories(draw_shape
@@ -53,6 +52,8 @@ target_include_directories(draw_shape
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 install(TARGETS
   draw_shape
@@ -64,4 +65,5 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
+ament_export_dependencies(rosidl_default_runtime)
 ament_package()
