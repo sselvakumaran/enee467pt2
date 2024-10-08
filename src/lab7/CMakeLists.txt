@@ -54,11 +54,24 @@ target_include_directories(draw_shape
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+
+add_executable(track_eef_pose src/eef_pose_tracker.cpp)
+ament_target_dependencies(track_eef_pose ${EEF_POSE_TRACKER_DEPS})
+target_include_directories(track_eef_pose
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
 rosidl_get_typesupport_target(cpp_typesupport_target
   ${PROJECT_NAME} rosidl_typesupport_cpp)
 
+target_link_libraries(draw_shape "${cpp_typesupport_target}")
+target_link_libraries(track_eef_pose "${cpp_typesupport_target}" Matplot++::matplot)
+
 install(TARGETS
   draw_shape
+  track_eef_pose
   DESTINATION lib/${PROJECT_NAME}
 )
 
