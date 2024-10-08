@@ -46,7 +46,9 @@ endforeach()
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/TrackRequest.srv"
 )
-ament_target_dependencies(draw_shape ${PACKAGE_DEPENDENCIES})
+
+add_executable(draw_shape src/ur3e_move_interface.cpp)
+ament_target_dependencies(draw_shape ${UR3E_MOVE_INTERFACE_DEPS})
 target_include_directories(draw_shape
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
