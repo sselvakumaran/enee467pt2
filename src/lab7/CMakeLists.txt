@@ -11,11 +11,7 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# package dependencies
-set(PACKAGE_DEPENDENCIES
-  ament_cmake
-  rclcpp
-  Boost
+set (UR3E_MOVE_INTERFACE_DEPS
   control_msgs
   Eigen3
   moveit_core
@@ -24,6 +20,22 @@ set(PACKAGE_DEPENDENCIES
   moveit_ros_planning_interface
   tf2_geometry_msgs
   tf2_ros
+)
+
+set (EEF_POSE_TRACKER_DEPS
+  tf2_geometry_msgs
+  tf2_ros
+  Matplot++
+)
+
+# package dependencies
+set(PACKAGE_DEPENDENCIES
+  ament_cmake
+  rclcpp
+  Boost
+  rosidl_default_generators
+  "${UR3E_MOVE_INTERFACE_DEPS}"
+  "${EEF_POSE_TRACKER_DEPS}"
 )
 
 # find dependencies
