@@ -6,6 +6,8 @@
 #include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include "lab7/srv/track_request.hpp"
+
 class UR3eMoveInterface : public rclcpp::Node {
 
 public:
@@ -107,11 +109,25 @@ private:
     const std::string& name,
     moveit::planning_interface::MoveGroupInterface::Plan& motion_plan);
 
+  /**
+   * @brief Sends a request to start tracking the end-effector poses for plotting and saving.
+   *
+   * @param request
+   * @return true
+   * @return false
+   */
+  bool sendEEFTrackRequest(const lab7::srv::TrackRequest::Request::SharedPtr& request);
+
   bool move_group_interface_initialized_ {false};
+  bool tracking_service_available_ {false};
+
   double velocity_scaling_factor_ {0.1};
   double acceleration_scaling_factor_ {0.1};
 
-  moveit::planning_interface::MoveGroupInterfacePtr move_group_interface_;
+  rclcpp::Client<lab7::srv::TrackRequest>::SharedPtr track_eef_client_ {nullptr};
+  // rclcpp::CallbackGroup::SharedPtr service_callback_group_ {nullptr};
+
+  moveit::planning_interface::MoveGroupInterfacePtr move_group_interface_ {nullptr};
   trajectory_processing::TimeOptimalTrajectoryGeneration time_optimal_trajectory_generation_;
 
 };

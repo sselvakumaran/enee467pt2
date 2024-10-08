@@ -8,12 +8,18 @@ UR3eMoveInterface::UR3eMoveInterface(const rclcpp::NodeOptions& node_options)
     rclcpp::Node::SharedPtr(std::move(this)), "ur_manipulator")}
 {
   RCLCPP_INFO(this->get_logger(), "Initializing move group node...");
-
   move_group_interface_->setMaxVelocityScalingFactor(velocity_scaling_factor_);
   move_group_interface_->setMaxAccelerationScalingFactor(acceleration_scaling_factor_);
 
   if (move_group_interface_->startStateMonitor(5))
     move_group_interface_initialized_ = true;
+
+  RCLCPP_INFO(this->get_logger(), "Waiting for end-effector tracking service");
+  track_eef_client_ = this->create_client<lab7::srv::TrackRequest>("track_eef");
+  tracking_service_available_ = track_eef_client_->wait_for_service(std::chrono::seconds(3));
+
+  if (!tracking_service_available_)
+    RCLCPP_WARN(this->get_logger(), "Tracking service is unavailable, poses cannot be saved/plotted.");
 }
 
 void UR3eMoveInterface::examplesMoveIt()
@@ -108,9 +114,27 @@ void UR3eMoveInterface::examplesMoveIt()
   // Step 5
   bool cartesian_plan_success {planCartesianPath(waypoints, cartesian_trajectory)};
 
+  // Additional Step: Create and send a track request to start tracking the end-effector pose
+  auto track_request {std::make_shared<lab7::srv::TrackRequest::Request>()};
+
+  track_request->tf_root_frame_name = move_group_interface_->getPlanningFrame();
+  track_request->tf_tip_frame_name = move_group_interface_->getEndEffectorLink();
+
+  track_request->plot_title = "Example: A Triangle in the vertical plane";
+  track_request->plot_axis_x = lab7::srv::TrackRequest::Request::Y_AXIS;
+  track_request->plot_axis_y = lab7::srv::TrackRequest::Request::Z_AXIS;
+
+  track_request->status = lab7::srv::TrackRequest::Request::START;
+
+  bool track_request_success {sendEEFTrackRequest(track_request)};
+
   // Step 6
-  if (cartesian_plan_success)
+  if (cartesian_plan_success && track_request_success)
     move_group_interface_->execute(cartesian_trajectory);
+
+  // Stop tracking the end effector by sending a STOP request.
+  track_request->status = lab7::srv::TrackRequest::Request::STOP;
+  sendEEFTrackRequest(track_request);
 
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
    * EXAMPLE 3 - Move the robot to a specific end-effector pose.
@@ -332,4 +356,26 @@ bool UR3eMoveInterface::planCartesianPath(
   robot_trajectory.getRobotTrajectoryMsg(trajectory);
 
   return plan_success;
+}
+
+bool UR3eMoveInterface::sendEEFTrackRequest(const lab7::srv::TrackRequest::Request::SharedPtr& request)
+{
+  if (!tracking_service_available_) {
+    RCLCPP_WARN(
+      this->get_logger(), "EEF tracking request send failed because this service is unavailable.");
+
+    return false;
+  }
+
+  auto result_future {track_eef_client_->async_send_request(request).share()};
+
+  RCLCPP_INFO(this->get_logger(), "EEF tracking request sent, waiting for result...");
+  auto result_status {result_future.wait_for(std::chrono::seconds(1))};
+
+  if (result_future.get()->success && result_status == std::future_status::ready)
+    RCLCPP_INFO(this->get_logger(), "EEF tracking request success.");
+  else
+    RCLCPP_WARN(this->get_logger(), "EEF tracking request failed.");
+
+  return result_future.get()->success;
 }
