@@ -104,9 +104,13 @@ void UR3eMoveInterface::examplesMoveIt()
   waypoints.push_back(pose3);
 
   auto pose4 = pose3;
+  pose4.position.z += std::sqrt(3) * 0.5 * triangle_side;
   pose4.position.y += 0.5 * triangle_side;
-  pose4.position.z += std::sqrt(3) * 0.25 * triangle_side;
   waypoints.push_back(pose4);
+
+  auto pose5 = pose4;
+  pose5.position.z -= std::sqrt(3) * 0.25 * triangle_side;
+  waypoints.push_back(pose5);
 
   // Step 4
   moveit_msgs::msg::RobotTrajectory cartesian_trajectory;
