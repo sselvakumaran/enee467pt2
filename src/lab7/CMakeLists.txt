@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.11)
 project(lab7)
 
 if(NOT CMAKE_CXX_STANDARD)
