@@ -15,7 +15,7 @@ RUN apt-get update \
   libxext6 \
   libx11-6
 
-ENV QT_X11_NO_MITSHM 1
+ENV QT_X11_NO_MITSHM=1
 
 # Add a non-root user
 ARG USERNAME=467-terp
@@ -35,8 +35,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # Extended stage for Nvidia GPU support (Requires NVIDIA Container Toolkit)
 FROM base as nvidia
 
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
 
 # Extended stage for AMD GPU support (Requires AMD ROCm software)
 FROM base as amd
