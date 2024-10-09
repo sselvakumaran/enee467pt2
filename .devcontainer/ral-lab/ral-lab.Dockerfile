@@ -44,7 +44,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 # Install dependencies for lab packages
 USER $USERNAME
-RUN git clone -b work-in-progress-3 https://github.com/ENEE467/lab-workspace.git /home/$USERNAME/tmp_ws \
+RUN git clone https://github.com/ENEE467/lab-workspace.git /home/$USERNAME/tmp_ws \
   && source /opt/ros/${ROS_DISTRO}/setup.bash \
   && (cd /home/$USERNAME/tmp_ws; rosdep update && rosdep install --from-paths src -y --ignore-src) \
   && rm -rf /home/$USERNAME/tmp_ws
