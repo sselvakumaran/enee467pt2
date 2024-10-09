@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="table">
+
+  <xacro:macro name="table" params="parent">
+
+    <link name="table">
+      <inertial>
+        <origin xyz="0.29488015160583136 -0.0112575599024666 0.44349678570471823" rpy="0 0 0"/>
+        <mass value="67.19569705839687"/>
+        <inertia ixx="12.563401" iyy="9.982349" izz="11.832457" ixy="-0.068036" iyz="-0.075582" ixz="0.019671"/>
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find lab_description)/meshes/ral_table/table.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find lab_description)/meshes/ral_table/table_collision.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="table_child_mount"/>
+
+    <joint name="table_parent_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="table"/>
+    </joint>
+
+    <joint name="child_mount_joint" type="fixed">
+      <parent link="table"/>
+      <child link="table_child_mount"/>
+      <origin xyz="0 0 0.740" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
