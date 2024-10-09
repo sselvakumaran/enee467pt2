@@ -17,6 +17,8 @@ then
   exit 1
 fi
 
+cd $ROS_WS
+
 # Install matplot++ dependencies
 sudo apt update && sudo apt install -y \
   libjpeg-dev \
@@ -50,11 +52,6 @@ cd $ROS_WS && rm -rf matplotplusplus
 
 # Install some ROS Packages
 sudo apt update && sudo apt install -y --no-install-recommends \
-  ros-humble-ur \
-  ros-humble-gazebo-ros-pkgs \
-  ros-humble-moveit \
-  ros-humble-ros2-control \
-  ros-humble-ros2-controllers \
   ros-humble-usb-cam \
   ros-humble-aruco-opencv
 
@@ -79,9 +76,6 @@ fi
 
 # Build the workspace
 colcon build --symlink-install
-
-# Set the workspace directory as an environment variable if it doesn't exist
-if [ -z $ROS_WS ]; then echo "export ROS_WS=$PWD" >> ~/.bashrc; fi
 
 # Always source the workspace and start a new session in the workspace root.
 echo "if [ -f $ROS_WS/install/setup.bash ]; then source $ROS_WS/install/setup.bash; fi" >> ~/.bashrc
