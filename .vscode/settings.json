@@ -2,6 +2,7 @@
   "editor.rulers": [
     {"column": 100}
   ],
+  "C_Cpp.configurationWarnings": "disabled",
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "files.autoSave": "afterDelay",
