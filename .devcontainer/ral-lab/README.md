@@ -1,11 +1,17 @@
-# Setting up the workspace on lab computers
+# Dev Container Setup for Lab Computers
+
+Clone the repository in the `home/` directory without changing the name of the workspace folder.
+
+```bash
+git clone https://github.com/ENEE467/lab-workspace.git
+```
 
 ## Building the Docker image
 
 Start a terminal session and change to `.devcontainer/ral-lab/` directory
 
 ```bash
-cd ~/<workspace-folder-name>/.devcontainer/ral-lab
+cd ~/lab-workspace/.devcontainer/ral-lab
 ```
 
 Build the Docker image with the given arguments
@@ -20,13 +26,26 @@ docker build \
   .
 ```
 
-## Starting the Devcontainer
+## Starting the Dev Container
 
-Now opening the workspace folder in VSCode with the `ral-lab` devcontainer configuration will
+Now opening the workspace folder in VSCode with the `ral-lab` Dev Container configuration will
 start the container named after the workspace folder.
 
-Open VSCode in the workspace folder from shell
+This page on Read the Docs describes the steps in detail.
 
-```bash
-code ~/<workspace-folder-name>
-```
+`lab-workspace` folder can now be deleted after testing.
+
+## Description
+
+The lab setup uses a more stable, finalized development environment which doesn't change very often.
+Hence all the project-specific setup (i.e. package dependencies) is *baked* into the Docker image.
+
+- This minimizes the setup time for containers.
+
+- Allows the containers to be *ephemeral* to save storage resources on lab computers.
+
+- Makes it easier to transfer the work to other lab computers by just moving the workspace folder
+  (without the build artifacts).
+
+>**Note to maintainers:** The Dockerfile and the container setup script for this configuration will
+always be the final stage of applying the new changes and updates to the lab exercises.
