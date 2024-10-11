@@ -31,7 +31,8 @@ docker build \
 Now opening the workspace folder in VSCode with the `ral-lab` Dev Container configuration will
 start the container named after the workspace folder.
 
-This page on Read the Docs describes the steps in detail.
+This page on [Read the Docs](https://enee467.readthedocs.io/en/latest/Setup.html#opening-the-workspace-in-visual-studio-code)
+describes the steps in detail.
 
 `lab-workspace` folder can now be deleted after testing.
 
