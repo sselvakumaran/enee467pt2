@@ -15,6 +15,6 @@ git clone https://github.com/ENEE467/lab-workspace.git ~/<workspace name>
 ## Further Steps
 
 <!-- TODO: Add links -->
-- [Opening the workspace folder in VSCode]()
-- [Lab 7]()
+- [Opening the workspace folder in VSCode](https://enee467.readthedocs.io/en/latest/Setup.html#opening-the-workspace-in-visual-studio-code)
+- [Lab 7](https://enee467.readthedocs.io/en/latest/Lab7.html)
 - [Lab 8]()
