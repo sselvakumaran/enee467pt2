@@ -1,60 +1,63 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction
-from launch.substitutions import LaunchConfiguration, PythonExpression, EnvironmentVariable
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration, PythonExpression, PathJoinSubstitution, EnvironmentVariable
 from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
 
 def generate_launch_description():
   launch_description = LaunchDescription()
 
-  simulation_arg = DeclareLaunchArgument(
-    'sim',
-    default_value='true',
-    description="Draw shapes in simulation or on the real arm"
+  table_number_arg = DeclareLaunchArgument(
+    'table',
+    default_value='1',
+    description="Table number in the RAL you're working on."
   )
-  launch_description.add_action(simulation_arg)
+  launch_description.add_action(table_number_arg)
 
-  track_eef_arg = DeclareLaunchArgument(
-    'track_eef',
-    default_value='true',
-    description="Enables end-effector pose tracking"
+  lab_part_arg = DeclareLaunchArgument(
+    'lab_part',
+    default_value='hand_eye_calib',
+    description="Part of Lab 7 exercise you're doing right now. Either calibration or result \
+                 verification."
   )
-  launch_description.add_action(track_eef_arg)
+  launch_description.add_action(lab_part_arg)
 
-  simulation_state = LaunchConfiguration('sim')
-  track_eef_state = LaunchConfiguration('track_eef')
+  table_folder = PythonExpression(["'table-' + '", LaunchConfiguration('table'), "'"])
+  lab_part =  LaunchConfiguration('lab_part')
 
-  eef_tracker_node = Node(
-    package="lab7",
-    condition=IfCondition(track_eef_state),
-    executable="track_eef_pose",
+  usb_cam_params_file = PathJoinSubstitution(
+    [FindPackageShare("lab7"), 'config', table_folder, 'usb_cam_params.yaml']
+  )
+
+  usb_cam_node = Node(
+    package='usb_cam',
+    executable='usb_cam_node_exe',
+    parameters=[usb_cam_params_file]
+  )
+
+  aruco_opencv_params_file = PathJoinSubstitution(
+    [FindPackageShare("lab7"), 'config', 'aruco_opencv_params.yaml']
+  )
+
+  aruco_opencv_node = Node(
+    package='aruco_opencv',
+    executable='aruco_tracker_autostart',
+    parameters=[aruco_opencv_params_file]
+  )
+
+  hand_eye_calib_node = Node(
+    package='lab7',
+    executable='hand_eye_calibration',
     parameters=[
-      {"workspace_dir": EnvironmentVariable('ROS_WS')}
+      {"workspace_dir": EnvironmentVariable('ROS_WS')},
+      {"marker_id": 5},
+      {"robot_base_frame": 'base_link'},
+      {"robot_gripper_frame": 'wrist_3_link'}
     ]
   )
-
-  lab_gazebo_simulation = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource(
-      [FindPackageShare("lab_simulation_gazebo"), "/launch", "/lab_sim_moveit.launch.py"]
-    ),
-    launch_arguments={
-      "ur_type": 'ur3e',
-      "description_package": 'lab_description',
-      "description_file": 'lab.urdf.xacro',
-      "moveit_config_package": 'lab_moveit_config',
-      "moveit_config_file": 'lab.srdf',
-      "runtime_config_package": 'lab_simulation_gazebo',
-      "controllers_file": 'lab_controllers.yaml',
-    }.items(),
-  )
-
-  start_simulation_action = GroupAction(
-    condition=IfCondition(PythonExpression(["'", simulation_state, "' == 'true'"])),
-    actions=[lab_gazebo_simulation, eef_tracker_node]
-  )
-  launch_description.add_action(start_simulation_action)
 
   ur_driver = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
@@ -65,32 +68,16 @@ def generate_launch_description():
       "robot_ip": '192.168.77.22',
       "description_package": 'lab_description',
       "description_file": 'lab.urdf.xacro',
-      "launch_rviz": 'false',
+      "launch_rviz": 'true',
+      "rviz_config_file": PathJoinSubstitution([FindPackageShare('lab7'), 'config', 'lab7.rviz'])
     }.items(),
   )
 
-  moveit_launch_action = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource(
-        [FindPackageShare("lab_moveit_config"), "/launch", "/lab_moveit.launch.py"]
-    ),
-    launch_arguments={
-        "ur_type": 'ur3e',
-        "safety_limits": 'true',
-        "description_package": 'lab_description',
-        "description_file": 'lab.urdf.xacro',
-        "moveit_config_package": 'lab_moveit_config',
-        "moveit_config_file": 'lab.srdf',
-        "publish_robot_description_semantic": "True",
-        "use_sim_time": "false",
-        "launch_rviz": 'true',
-        "use_fake_hardware": "false",  # to change moveit default controller to joint_trajectory_controller
-    }.items(),
+  hand_eye_calib_action = GroupAction(
+    condition=IfCondition(PythonExpression(["'", lab_part , "' == 'hand_eye_calib'"])),
+    actions=[usb_cam_node, aruco_opencv_node, ur_driver, hand_eye_calib_node]
   )
 
-  start_ur_driver_action = GroupAction(
-    condition=IfCondition(PythonExpression(["'", simulation_state, "' == 'false'"])),
-    actions=[ur_driver, moveit_launch_action, eef_tracker_node]
-  )
-  launch_description.add_action(start_ur_driver_action)
+  launch_description.add_action(hand_eye_calib_action)
 
   return launch_description
