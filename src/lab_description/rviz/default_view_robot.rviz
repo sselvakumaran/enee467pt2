@@ -5,9 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /RobotModel1/Description Topic1
-        - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 139
+    Tree Height: 1096
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -82,24 +81,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        ft_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         shoulder_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        table:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        table_child_mount:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         tool0:
           Alpha: 1
           Show Axes: false
@@ -109,10 +95,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        world:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         wrist_1_link:
           Alpha: 1
           Show Axes: false
@@ -128,69 +110,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-      Mass Properties:
-        Inertia: false
-        Mass: false
       Name: RobotModel
       TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Class: rviz_default_plugins/TF
-      Enabled: true
-      Frame Timeout: 15
-      Frames:
-        All Enabled: false
-        base:
-          Value: false
-        base_link:
-          Value: true
-        base_link_inertia:
-          Value: false
-        flange:
-          Value: false
-        ft_frame:
-          Value: false
-        table:
-          Value: false
-        table_child_mount:
-          Value: false
-        tool0:
-          Value: false
-        world:
-          Value: false
-        wrist_3_link:
-          Value: true
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: true
-      Tree:
-        world:
-          table:
-            table_child_mount:
-              base_link:
-                base:
-                  {}
-                base_link_inertia:
-                  {}
-      Update Interval: 0
-      Value: true
-    - Class: rviz_default_plugins/Image
-      Enabled: true
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /aruco_tracker/debug
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -206,9 +130,6 @@ Visualization Manager:
     - Class: rviz_default_plugins/Measure
       Line color: 128; 128; 0
     - Class: rviz_default_plugins/SetInitialPose
-      Covariance x: 0.25
-      Covariance y: 0.25
-      Covariance yaw: 0.06853891909122467
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -237,61 +158,39 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.5
+      Distance: 3.493516445159912
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: false
+        X: -0.0457618348300457
+        Y: -0.07058511674404144
+        Z: 0.49734944105148315
+      Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.39539816975593567
+      Pitch: 0.15039828419685364
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz_default_plugins)
-      Yaw: 0.7553982138633728
-    Saved:
-      - Class: rviz_default_plugins/Orbit
-        Distance: 4.5
-        Enable Stereo Rendering:
-          Stereo Eye Separation: 0.05999999865889549
-          Stereo Focal Distance: 1
-          Swap Stereo Eyes: false
-          Value: false
-        Focal Point:
-          X: 0
-          Y: 0
-          Z: 0
-        Focal Shape Fixed Size: false
-        Focal Shape Size: 0.05000000074505806
-        Invert Z Axis: false
-        Name: Default
-        Near Clip Distance: 0.009999999776482582
-        Pitch: 0.39539816975593567
-        Target Frame: <Fixed Frame>
-        Value: Orbit (rviz_default_plugins)
-        Yaw: 0.7553982138633728
+      Value: Orbit (rviz)
+      Yaw: 0.5353983640670776
+    Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1061
+  Height: 1379
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002d3fc0200000007fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000002ad000002d3fc0200000005fb0000000a0049006d0061006700650100000014000002d30000002800fffffffb0000000c00430061006d0065007200610000000014000002d30000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000001ff00000251000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000780000001befc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005720000011dfc0100000003fb000000100044006900730070006c0061007900730100000000000005720000015600fffffffb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000002bf000002d300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000004f0fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000007901000003fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000048000004f00000010101000003fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c000002610000000100000110000004f0fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000048000004f0000000db01000003fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d0065010000000000000450000000000000000000000784000004f000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1394
-  X: 376
-  Y: 129
+  Width: 2560
+  X: 0
+  Y: 30
