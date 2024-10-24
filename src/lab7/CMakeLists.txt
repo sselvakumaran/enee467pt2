@@ -36,9 +36,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/HandEyeCalib.srv"
 )
 
-add_executable(hand_eye_calibration src/hand_eye_calib.cpp)
-ament_target_dependencies(hand_eye_calibration "${CORE_DEPENDENCIES}" "${HAND_EYE_CALIB_DEPS}")
-target_include_directories(hand_eye_calibration
+ament_target_dependencies(hand_eye_calib "${CORE_DEPENDENCIES}" "${HAND_EYE_CALIB_DEPS}")
+target_include_directories(hand_eye_calib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -53,7 +52,8 @@ target_include_directories(command_interface
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
-target_link_libraries(hand_eye_calibration
+
+target_link_libraries(hand_eye_calib
   "${cpp_typesupport_target}"
   opencv_calib3d
   Eigen3::Eigen
@@ -66,7 +66,7 @@ target_link_libraries(command_interface
 )
 
 install(TARGETS
-  hand_eye_calibration
+  hand_eye_calib
   command_interface
   DESTINATION lib/${PROJECT_NAME}
 )
