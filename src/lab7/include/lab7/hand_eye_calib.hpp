@@ -11,7 +11,9 @@
 #include <aruco_opencv_msgs/msg/aruco_detection.hpp>
 
 #include <Eigen/Dense>
+
 #include <opencv2/core/eigen.hpp>
+#include <opencv2/core/affine.hpp>
 
 #include "lab7/srv/hand_eye_calib.hpp"
 
@@ -38,7 +40,6 @@ private:
 
   void resetMeasurements();
 
-  cv::Vec3d rvecFromQuaternion(const geometry_msgs::msg::Quaternion& quaternion_in);
   std::string createTimeStamp();
 
   bool is_base2gripper_frame_available_ {false};
