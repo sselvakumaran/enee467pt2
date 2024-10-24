@@ -110,6 +110,12 @@ void HandEyeCalibNode::resetMeasurements()
   base2gripper_frame_rvecs_.clear();
   cam2gripper_frame_tvecs_.clear();
   cam2gripper_frame_rvecs_.clear();
+
+  estimated_eef_positions_.clear();
+  actual_eef_positions_.clear();
+  estimated_eef_orientations_.clear();
+  actual_eef_orientations_.clear();
+
   measures_captured_quantity_ = 0;
 
   is_calibration_complete_ = false;
@@ -200,11 +206,22 @@ void HandEyeCalibNode::captureMeasure()
   cv::Affine3d cam2gripper_frame_mat {};
   cv::eigen2cv(cam2gripper_frame_.matrix(), cam2gripper_frame_mat.matrix);
 
-  base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
-  base2gripper_frame_rvecs_.emplace_back(base2gripper_frame_mat.rvec());
+  if (!is_calibration_complete_) {
+    base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
+    base2gripper_frame_rvecs_.emplace_back(base2gripper_frame_mat.rvec());
 
     cam2gripper_frame_tvecs_.emplace_back(cam2gripper_frame_mat.translation());
     cam2gripper_frame_rvecs_.emplace_back(cam2gripper_frame_mat.rvec());
+  }
+  else {
+    auto estimated_eef_pose {base2cam_frame_ * cam2gripper_frame_};
+
+    estimated_eef_positions_.emplace_back(estimated_eef_pose.translation());
+    estimated_eef_orientations_.emplace_back(estimated_eef_pose.rotation());
+
+    actual_eef_positions_.emplace_back(base2gripper_frame_.translation());
+    actual_eef_orientations_.emplace_back(base2gripper_frame_.rotation());
+  }
 
   measures_captured_quantity_++;
 
@@ -253,8 +270,12 @@ void HandEyeCalibNode::calibrateHandEye()
   cv::cv2eigen(base2cam_frame_mat_.matrix, base2cam_frame_.matrix());
 
   is_calibration_complete_ = true;
-  RCLCPP_INFO(this->get_logger(), "Hand-eye calibration compelte :)");
+  RCLCPP_INFO(
+    this->get_logger(), "Hand-eye calibration compelte, now you can capture frames for verification");
+
   RCLCPP_INFO(this->get_logger(), "Estimated frame will now be broadcasted.");
+
+  measures_captured_quantity_ = 0;
 }
 
 void HandEyeCalibNode::broadcastBase2CameraFrame()

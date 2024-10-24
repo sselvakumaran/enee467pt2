@@ -59,12 +59,19 @@ private:
   Eigen::Affine3d cam2gripper_frame_ {Eigen::Affine3d::Identity()};
   Eigen::Affine3d base2cam_frame_ {Eigen::Affine3d::Identity()};
 
+  // Stores exactly the same matrix of base2cam_frame_ but in cv::Affine3d format.
   cv::Affine3d base2cam_frame_mat_ {cv::Affine3d::Identity()};
 
   std::vector<cv::Mat> base2gripper_frame_tvecs_ {};
   std::vector<cv::Mat> base2gripper_frame_rvecs_ {};
   std::vector<cv::Mat> cam2gripper_frame_tvecs_ {};
   std::vector<cv::Mat> cam2gripper_frame_rvecs_ {};
+
+  std::vector<Eigen::Vector3d> estimated_eef_positions_ {};
+  std::vector<Eigen::Vector3d> actual_eef_positions_ {};
+
+  std::vector<Eigen::Quaterniond> estimated_eef_orientations_ {};
+  std::vector<Eigen::Quaterniond> actual_eef_orientations_ {};
 
   std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_ {nullptr};
   geometry_msgs::msg::TransformStamped tf_static_transform_ {};
