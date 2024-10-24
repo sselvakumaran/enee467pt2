@@ -1,7 +1,7 @@
 #include <filesystem>
 
+#include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
-#include <opencv2/core/persistence.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -74,6 +74,13 @@ void HandEyeCalibNode::serviceCallback(
 
   case (lab7::srv::HandEyeCalib::Request::CALIBRATE):
     calibrateHandEye();
+
+    if (!is_calibration_complete_) {
+      response->set__success(false);
+
+      return;
+    }
+
     break;
 
   case (lab7::srv::HandEyeCalib::Request::RESET):
@@ -99,25 +106,11 @@ void HandEyeCalibNode::resetMeasurements()
   base2gripper_frame_rvecs_.clear();
   gripper2cam_frame_tvecs_.clear();
   gripper2cam_frame_rvecs_.clear();
+  measures_captured_quantity_ = 0;
 
   is_calibration_complete_ = false;
 
   RCLCPP_INFO(this->get_logger(), "Measurements have been reset, you can start over now.");
-}
-
-cv::Vec3d HandEyeCalibNode::rvecFromQuaternion(const geometry_msgs::msg::Quaternion& quaternion_in)
-{
-  tf2::Quaternion quaternion_tf2 {};
-  tf2::convert(quaternion_in, quaternion_tf2);
-  quaternion_tf2.normalize();
-
-  double magnitude {2 * std::acos(quaternion_tf2.getW())};
-  double sin_half_theta = std::sqrt(1 - std::pow(quaternion_tf2.getW(), 2));
-
-  return {
-    magnitude * (quaternion_tf2.getX() / sin_half_theta),
-    magnitude * (quaternion_tf2.getY() / sin_half_theta),
-    magnitude * (quaternion_tf2.getZ() / sin_half_theta)};
 }
 
 void HandEyeCalibNode::getBase2GripperFrame()
@@ -138,12 +131,19 @@ void HandEyeCalibNode::getBase2GripperFrame()
     return;
   }
 
-  base2gripper_frame_.translation() = {
+  Eigen::Vector3d translation {
     base2gripper_transform_.translation.x,
     base2gripper_transform_.translation.y,
     base2gripper_transform_.translation.z};
 
-  base2gripper_frame_.rvec() = rvecFromQuaternion(base2gripper_transform_.rotation);
+  Eigen::Quaterniond rotation {
+    base2gripper_transform_.rotation.w,
+    base2gripper_transform_.rotation.x,
+    base2gripper_transform_.rotation.y,
+    base2gripper_transform_.rotation.z};
+
+  base2gripper_frame_.translation() = translation;
+  base2gripper_frame_.matrix().topLeftCorner(3, 3) = rotation.toRotationMatrix();
 
   is_base2gripper_frame_available_ = true;
 }
@@ -156,12 +156,19 @@ void HandEyeCalibNode::getGripper2CameraFrame(const aruco_opencv_msgs::msg::Aruc
 
     gripper2cam_pose_ = marker_pose.pose;
 
-    gripper2cam_frame_.translation() = {
+    Eigen::Vector3d translation {
       gripper2cam_pose_.position.x,
       gripper2cam_pose_.position.y,
       gripper2cam_pose_.position.z};
 
-    gripper2cam_frame_.rvec() = rvecFromQuaternion(gripper2cam_pose_.orientation);
+    Eigen::Quaterniond rotation {
+      gripper2cam_pose_.orientation.w,
+      gripper2cam_pose_.orientation.x,
+      gripper2cam_pose_.orientation.y,
+      gripper2cam_pose_.orientation.z};
+
+    gripper2cam_frame_.translation() = translation;
+    gripper2cam_frame_.matrix().topLeftCorner(3, 3) = rotation.toRotationMatrix();
 
     is_gripper2cam_frame_available_ = true;
 
@@ -183,11 +190,17 @@ void HandEyeCalibNode::captureMeasure()
     return;
   }
 
-  base2gripper_frame_tvecs_.push_back(base2gripper_frame_.translation());
-  base2gripper_frame_rvecs_.push_back(base2gripper_frame_.rvec());
+  cv::Affine3d base2gripper_frame_mat {};
+  cv::eigen2cv(base2cam_frame_.matrix(), base2gripper_frame_mat.matrix);
 
-  gripper2cam_frame_tvecs_.push_back(gripper2cam_frame_.translation());
-  gripper2cam_frame_rvecs_.push_back(gripper2cam_frame_.rvec());
+  cv::Affine3d gripper2cam_frame_mat {};
+  cv::eigen2cv(gripper2cam_frame_.matrix(), gripper2cam_frame_mat.matrix);
+
+  base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
+  base2gripper_frame_rvecs_.emplace_back(base2gripper_frame_mat.rvec());
+
+  gripper2cam_frame_tvecs_.emplace_back(gripper2cam_frame_mat.translation());
+  gripper2cam_frame_rvecs_.emplace_back(gripper2cam_frame_mat.rvec());
 
   measures_captured_quantity_++;
 
@@ -213,14 +226,33 @@ void HandEyeCalibNode::calibrateHandEye()
 
   RCLCPP_INFO(this->get_logger(), "Calibrating... This might take some while.");
 
-  cv::calibrateRobotWorldHandEye(
-    gripper2cam_frame_rvecs_, gripper2cam_frame_tvecs_,
-    base2gripper_frame_rvecs_, base2gripper_frame_tvecs_,
-    base2cam_frame_.rotation(), base2cam_frame_.translation(),
-    cv::noArray(), cv::noArray());
+  cv::Mat rotation_matrix {};
+  cv::Vec3d translation_vector {};
+
+  try {
+    cv::calibrateRobotWorldHandEye(
+      gripper2cam_frame_rvecs_, gripper2cam_frame_tvecs_,
+      base2gripper_frame_rvecs_, base2gripper_frame_tvecs_,
+      rotation_matrix, translation_vector,
+      cv::noArray(), cv::noArray());
+  }
+  catch (const cv::Exception& exception) {
+    std::cerr << exception.what();
+
+    is_calibration_complete_ = false;
+    RCLCPP_WARN(this->get_logger(), "Calibration failed, try again :(");
+
+    resetMeasurements();
+
+    return;
+  }
+
+  base2cam_frame_mat_.rotation(rotation_matrix);
+  base2cam_frame_mat_.translation(translation_vector);
+  cv::cv2eigen(base2cam_frame_mat_.matrix, base2cam_frame_.matrix());
 
   is_calibration_complete_ = true;
-  RCLCPP_INFO(this->get_logger(), "Hand-eye calibration compelte!");
+  RCLCPP_INFO(this->get_logger(), "Hand-eye calibration compelte :)");
   RCLCPP_INFO(this->get_logger(), "Estimated frame will now be broadcasted.");
 }
 
@@ -237,20 +269,11 @@ void HandEyeCalibNode::broadcastBase2CameraFrame()
   tf_static_transform_.transform.translation.y = base2cam_frame_.translation()[1];
   tf_static_transform_.transform.translation.z = base2cam_frame_.translation()[2];
 
-  tf2::Quaternion rotation_quaternion;
-
-  tf2::Vector3 rotation_vector {};
-  rotation_vector.setX(base2cam_frame_.rvec()[0]);
-  rotation_vector.setY(base2cam_frame_.rvec()[1]);
-  rotation_vector.setZ(base2cam_frame_.rvec()[2]);
-
-  double rotation_angle {
-    std::sqrt(
-        std::pow(base2cam_frame_.rvec()[0], 2)
-      + std::pow(base2cam_frame_.rvec()[1], 2)
-      + std::pow(base2cam_frame_.rvec()[2], 2))};
-
-  rotation_quaternion.setRotation(rotation_vector, rotation_angle);
+  Eigen::Quaterniond rotation {base2cam_frame_.rotation()};
+  tf_static_transform_.transform.rotation.w = rotation.w();
+  tf_static_transform_.transform.rotation.x = rotation.x();
+  tf_static_transform_.transform.rotation.y = rotation.y();
+  tf_static_transform_.transform.rotation.z = rotation.z();
 
   tf_static_broadcaster_->sendTransform(tf_static_transform_);
 }
@@ -289,7 +312,7 @@ void HandEyeCalibNode::saveOutput()
   }
 
   output_file.writeComment("\nTransformation from base to camera frame");
-  output_file << base2cam_frame_.matrix;
+  output_file << base2cam_frame_mat_.matrix;
   output_file.release();
 }
 

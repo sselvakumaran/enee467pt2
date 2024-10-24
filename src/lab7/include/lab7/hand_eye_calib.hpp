@@ -10,9 +10,11 @@
 
 #include <aruco_opencv_msgs/msg/aruco_detection.hpp>
 
+#include <Eigen/Dense>
+#include <opencv2/core/eigen.hpp>
+
 #include "lab7/srv/hand_eye_calib.hpp"
 
-#include <opencv2/core/affine.hpp>
 
 class HandEyeCalibNode : public rclcpp::Node {
 
@@ -52,14 +54,16 @@ private:
   geometry_msgs::msg::Transform base2gripper_transform_ {};
   geometry_msgs::msg::Pose gripper2cam_pose_ {};
 
-  cv::Affine3d base2gripper_frame_ {cv::Affine3d::Identity()};
-  cv::Affine3d gripper2cam_frame_ {cv::Affine3d::Identity()};
-  cv::Affine3d base2cam_frame_ {cv::Affine3d::Identity()};
+  Eigen::Affine3d base2gripper_frame_ {Eigen::Affine3d::Identity()};
+  Eigen::Affine3d gripper2cam_frame_ {Eigen::Affine3d::Identity()};
+  Eigen::Affine3d base2cam_frame_ {Eigen::Affine3d::Identity()};
 
-  std::vector<cv::Vec3d> base2gripper_frame_tvecs_ {};
-  std::vector<cv::Vec3d> base2gripper_frame_rvecs_ {};
-  std::vector<cv::Vec3d> gripper2cam_frame_tvecs_ {};
-  std::vector<cv::Vec3d> gripper2cam_frame_rvecs_ {};
+  cv::Affine3d base2cam_frame_mat_ {cv::Affine3d::Identity()};
+
+  std::vector<cv::Mat> base2gripper_frame_tvecs_ {};
+  std::vector<cv::Mat> base2gripper_frame_rvecs_ {};
+  std::vector<cv::Mat> gripper2cam_frame_tvecs_ {};
+  std::vector<cv::Mat> gripper2cam_frame_rvecs_ {};
 
   std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_ {nullptr};
   geometry_msgs::msg::TransformStamped tf_static_transform_ {};
