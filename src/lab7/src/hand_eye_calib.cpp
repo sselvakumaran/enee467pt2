@@ -285,7 +285,7 @@ void HandEyeCalibNode::broadcastBase2CameraFrame()
 
   tf_static_transform_.header.stamp = this->get_clock()->now();
   tf_static_transform_.header.frame_id = robot_base_frame_;
-  tf_static_transform_.child_frame_id = "test_camera_frame";
+  tf_static_transform_.child_frame_id = "camera";
 
   tf_static_transform_.transform.translation.x = base2cam_frame_.translation()[0];
   tf_static_transform_.transform.translation.y = base2cam_frame_.translation()[1];
