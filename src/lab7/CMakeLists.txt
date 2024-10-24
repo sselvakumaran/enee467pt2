@@ -18,6 +18,7 @@ set(HAND_EYE_CALIB_DEPS
   tf2_geometry_msgs
   geometry_msgs
   OpenCV
+  Eigen3
 )
 
 set(CORE_DEPENDENCIES
@@ -55,6 +56,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_type
 target_link_libraries(hand_eye_calibration
   "${cpp_typesupport_target}"
   opencv_calib3d
+  Eigen3::Eigen
   tf2_ros::tf2_ros
   tf2_geometry_msgs::tf2_geometry_msgs
 )
