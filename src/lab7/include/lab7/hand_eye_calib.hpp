@@ -32,6 +32,7 @@ private:
   void getGripper2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg);
   void captureMeasure();
   void calibrateHandEye();
+  void verifyCalibration();
   void broadcastBase2CameraFrame();
   void saveOutput();
 

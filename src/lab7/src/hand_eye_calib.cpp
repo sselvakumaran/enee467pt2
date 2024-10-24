@@ -83,6 +83,10 @@ void HandEyeCalibNode::serviceCallback(
 
     break;
 
+  case (lab7::srv::HandEyeCalib::Request::VERIFY):
+    verifyCalibration();
+    break;
+
   case (lab7::srv::HandEyeCalib::Request::RESET):
     resetMeasurements();
     break;
