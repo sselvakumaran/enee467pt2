@@ -108,8 +108,8 @@ void HandEyeCalibNode::resetMeasurements()
 {
   base2gripper_frame_tvecs_.clear();
   base2gripper_frame_rvecs_.clear();
-  gripper2cam_frame_tvecs_.clear();
-  gripper2cam_frame_rvecs_.clear();
+  cam2gripper_frame_tvecs_.clear();
+  cam2gripper_frame_rvecs_.clear();
   measures_captured_quantity_ = 0;
 
   is_calibration_complete_ = false;
@@ -158,35 +158,35 @@ void HandEyeCalibNode::getGripper2CameraFrame(const aruco_opencv_msgs::msg::Aruc
     if (marker_pose.marker_id != marker_id_)
       continue;
 
-    gripper2cam_pose_ = marker_pose.pose;
+    cam2gripper_pose_ = marker_pose.pose;
 
     Eigen::Vector3d translation {
-      gripper2cam_pose_.position.x,
-      gripper2cam_pose_.position.y,
-      gripper2cam_pose_.position.z};
+      cam2gripper_pose_.position.x,
+      cam2gripper_pose_.position.y,
+      cam2gripper_pose_.position.z};
 
     Eigen::Quaterniond rotation {
-      gripper2cam_pose_.orientation.w,
-      gripper2cam_pose_.orientation.x,
-      gripper2cam_pose_.orientation.y,
-      gripper2cam_pose_.orientation.z};
+      cam2gripper_pose_.orientation.w,
+      cam2gripper_pose_.orientation.x,
+      cam2gripper_pose_.orientation.y,
+      cam2gripper_pose_.orientation.z};
 
-    gripper2cam_frame_.translation() = translation;
-    gripper2cam_frame_.matrix().topLeftCorner(3, 3) = rotation.toRotationMatrix();
+    cam2gripper_frame_.translation() = translation;
+    cam2gripper_frame_.matrix().topLeftCorner(3, 3) = rotation.toRotationMatrix();
 
-    is_gripper2cam_frame_available_ = true;
+    is_cam2gripper_frame_available_ = true;
 
     return;
   }
 
-  is_gripper2cam_frame_available_ = false;
+  is_cam2gripper_frame_available_ = false;
 
   return;
 }
 
 void HandEyeCalibNode::captureMeasure()
 {
-  if (!is_base2gripper_frame_available_ || !is_gripper2cam_frame_available_) {
+  if (!is_base2gripper_frame_available_ || !is_cam2gripper_frame_available_) {
     RCLCPP_WARN(
       this->get_logger(),
       "Measure capture failed: One/Both of the frames is unavailable, try again.");
@@ -197,14 +197,14 @@ void HandEyeCalibNode::captureMeasure()
   cv::Affine3d base2gripper_frame_mat {};
   cv::eigen2cv(base2cam_frame_.matrix(), base2gripper_frame_mat.matrix);
 
-  cv::Affine3d gripper2cam_frame_mat {};
-  cv::eigen2cv(gripper2cam_frame_.matrix(), gripper2cam_frame_mat.matrix);
+  cv::Affine3d cam2gripper_frame_mat {};
+  cv::eigen2cv(cam2gripper_frame_.matrix(), cam2gripper_frame_mat.matrix);
 
   base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
   base2gripper_frame_rvecs_.emplace_back(base2gripper_frame_mat.rvec());
 
-  gripper2cam_frame_tvecs_.emplace_back(gripper2cam_frame_mat.translation());
-  gripper2cam_frame_rvecs_.emplace_back(gripper2cam_frame_mat.rvec());
+    cam2gripper_frame_tvecs_.emplace_back(cam2gripper_frame_mat.translation());
+    cam2gripper_frame_rvecs_.emplace_back(cam2gripper_frame_mat.rvec());
 
   measures_captured_quantity_++;
 
@@ -225,19 +225,16 @@ void HandEyeCalibNode::calibrateHandEye()
     return;
   }
 
-  // cv::Mat3d base2cam_rotation_matrix {};
-  // cv::Vec3d base2cam_translation_vector {};
-
   RCLCPP_INFO(this->get_logger(), "Calibrating... This might take some while.");
 
-  cv::Mat rotation_matrix {};
-  cv::Vec3d translation_vector {};
+  cv::Mat base2cam_rotation_matrix {};
+  cv::Vec3d base2cam_translation_vector {};
 
   try {
     cv::calibrateRobotWorldHandEye(
-      gripper2cam_frame_rvecs_, gripper2cam_frame_tvecs_,
+      cam2gripper_frame_rvecs_, cam2gripper_frame_tvecs_,
       base2gripper_frame_rvecs_, base2gripper_frame_tvecs_,
-      rotation_matrix, translation_vector,
+      base2cam_rotation_matrix, base2cam_translation_vector,
       cv::noArray(), cv::noArray());
   }
   catch (const cv::Exception& exception) {
@@ -251,8 +248,8 @@ void HandEyeCalibNode::calibrateHandEye()
     return;
   }
 
-  base2cam_frame_mat_.rotation(rotation_matrix);
-  base2cam_frame_mat_.translation(translation_vector);
+  base2cam_frame_mat_.rotation(base2cam_rotation_matrix);
+  base2cam_frame_mat_.translation(base2cam_translation_vector);
   cv::cv2eigen(base2cam_frame_mat_.matrix, base2cam_frame_.matrix());
 
   is_calibration_complete_ = true;
