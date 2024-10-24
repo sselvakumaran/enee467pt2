@@ -31,20 +31,6 @@ void Lab7CommandInterface::sendHandEyeCalibRequest(
 
 int main(int argc, char** argv)
 {
-  if (argc < 2) {
-    std::cerr << "\nPlease mention the service to send commands to.\n"
-              << "Available Options:"
-              << "  hand_eye_calib"
-              << "  verify_calib" << '\n';
-
-    return 1;
-  }
-
-  std::string service_argument {};
-
-  if (argv[1])
-    service_argument = argv[1];
-
   rclcpp::init(argc, argv);
 
   auto command_interface_node {std::make_shared<Lab7CommandInterface>()};
@@ -53,60 +39,54 @@ int main(int argc, char** argv)
   executor.add_node(command_interface_node);
   std::thread([&executor]() { executor.spin(); }).detach();
 
-  if (service_argument == "hand_eye_calib") {
-    std::cout << "\nFor Hand-eye calibration, use the following commands:\n"
-              << "  Press ENTER to capture a measurement\n"
-              << "  Type 'calibrate' and press ENTER to perform the hand-eye calibration\n"
-              << "  Type 'reset' and press ENTER to clear the measurements and start over\n"
-              << "  Type 'save' and press ENTER to save the calibration result\n"
-              << "  Type 'exit' and press ENTER to exit\n";
+  std::cout << "\nFor Hand-eye calibration, use the following commands:\n"
+            << "  Press ENTER to capture a measurement\n"
+            << "  Type 'calibrate' and press ENTER to perform the hand-eye calibration\n"
+            << "  Type 'verify' and press ENTER to verify calibration result\n"
+            << "  Type 'reset' and press ENTER to clear the measurements and start over\n"
+            << "  Type 'save' and press ENTER to save the calibration/verification result\n"
+            << "  Type 'exit' and press ENTER to exit\n";
 
-    std::string input {};
-    auto request {std::make_shared<lab7::srv::HandEyeCalib::Request>()};
+  std::string input {};
+  auto request {std::make_shared<lab7::srv::HandEyeCalib::Request>()};
 
-    do {
-      std::cout << "\nYour command: ";
-      std::getline(std::cin, input);
+  do {
+    std::cout << "\nYour command: ";
+    std::getline(std::cin, input);
 
-      if (input.empty()) {
-        request->set__action(lab7::srv::HandEyeCalib::Request::CAPTURE);
-        command_interface_node->sendHandEyeCalibRequest(request);
-      }
+    if (input.empty()) {
+      request->set__action(lab7::srv::HandEyeCalib::Request::CAPTURE);
+      command_interface_node->sendHandEyeCalibRequest(request);
+    }
 
-      else if (input == "calibrate") {
-        request->set__action(lab7::srv::HandEyeCalib::Request::CALIBRATE);
-        command_interface_node->sendHandEyeCalibRequest(request);
-      }
+    else if (input == "calibrate") {
+      request->set__action(lab7::srv::HandEyeCalib::Request::CALIBRATE);
+      command_interface_node->sendHandEyeCalibRequest(request);
+    }
 
-      else if (input == "reset") {
-        request->set__action(lab7::srv::HandEyeCalib::Request::RESET);
-        command_interface_node->sendHandEyeCalibRequest(request);
-      }
+    else if (input == "verify") {
+      request->set__action(lab7::srv::HandEyeCalib::Request::VERIFY);
+      command_interface_node->sendHandEyeCalibRequest(request);
+    }
 
-      else if (input == "save") {
-        request->set__action(lab7::srv::HandEyeCalib::Request::SAVE);
-        command_interface_node->sendHandEyeCalibRequest(request);
-      }
+    else if (input == "reset") {
+      request->set__action(lab7::srv::HandEyeCalib::Request::RESET);
+      command_interface_node->sendHandEyeCalibRequest(request);
+    }
 
-      else {
-        std::cerr << "Please provide a correct input and try again." << '\n';
-      }
+    else if (input == "save") {
+      request->set__action(lab7::srv::HandEyeCalib::Request::SAVE);
+      command_interface_node->sendHandEyeCalibRequest(request);
+    }
+
+    else if (input != "exit") {
+      std::cerr << "Please provide a correct input and try again." << '\n';
+    }
 
 
-    } while (input != "exit");
+  } while (input != "exit");
 
-    command_interface_node->stopNode();
-  }
-
-  else if (service_argument == "verify_calib") {
-    std::cout << "\n\nFor verifying calibration, use the following commands:\n"
-              << "  Press ENTER to capture a measurement\n"
-              << "  Type 'verify' and press ENTER to calculate the error\n"
-              << "  Type 'reset' and press ENTER to clear the measurements and start over\n"
-              << "  Type 'save' and press ENTER to save the result\n"
-              << "  Type 'exit' and press ENTER to exit";
-
-  }
+  command_interface_node->stopNode();
 
   return 0;
 }
