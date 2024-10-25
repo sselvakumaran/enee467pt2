@@ -64,9 +64,9 @@ private:
   cv::Affine3d base2cam_frame_mat_ {cv::Affine3d::Identity()};
 
   std::vector<cv::Mat> base2gripper_frame_tvecs_ {};
-  std::vector<cv::Mat> base2gripper_frame_rvecs_ {};
+  std::vector<cv::Mat> base2gripper_frame_rmatxs_ {};
   std::vector<cv::Mat> cam2gripper_frame_tvecs_ {};
-  std::vector<cv::Mat> cam2gripper_frame_rvecs_ {};
+  std::vector<cv::Mat> cam2gripper_frame_rmatxs_ {};
 
   std::vector<Eigen::Vector3d> estimated_eef_positions_ {};
   std::vector<Eigen::Vector3d> actual_eef_positions_ {};
