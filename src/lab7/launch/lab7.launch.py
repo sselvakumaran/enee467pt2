@@ -17,16 +17,7 @@ def generate_launch_description():
   )
   launch_description.add_action(table_number_arg)
 
-  lab_part_arg = DeclareLaunchArgument(
-    'lab_part',
-    default_value='hand_eye_calib',
-    description="Part of Lab 7 exercise you're doing right now. Either calibration or result \
-                 verification."
-  )
-  launch_description.add_action(lab_part_arg)
-
   table_folder = PythonExpression(["'table-' + '", LaunchConfiguration('table'), "'"])
-  lab_part =  LaunchConfiguration('lab_part')
 
   usb_cam_params_file = PathJoinSubstitution(
     [FindPackageShare("lab7"), 'config', table_folder, 'usb_cam_params.yaml']
@@ -74,10 +65,8 @@ def generate_launch_description():
   )
 
   hand_eye_calib_action = GroupAction(
-    condition=IfCondition(PythonExpression(["'", lab_part , "' == 'hand_eye_calib'"])),
     actions=[usb_cam_node, aruco_opencv_node, ur_driver, hand_eye_calib_node]
   )
-
   launch_description.add_action(hand_eye_calib_action)
 
   return launch_description
