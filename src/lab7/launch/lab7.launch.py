@@ -41,7 +41,7 @@ def generate_launch_description():
 
   hand_eye_calib_node = Node(
     package='lab7',
-    executable='hand_eye_calibration',
+    executable='hand_eye_calib',
     parameters=[
       {"workspace_dir": EnvironmentVariable('ROS_WS')},
       {"marker_id": 5},
