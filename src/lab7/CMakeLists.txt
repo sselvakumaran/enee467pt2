@@ -37,7 +37,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 add_executable(hand_eye_calib
-  src/verify_calib.cpp
+  src/lab7.cpp
   src/hand_eye_calib.cpp
 )
 ament_target_dependencies(hand_eye_calib "${CORE_DEPENDENCIES}" "${HAND_EYE_CALIB_DEPS}")
