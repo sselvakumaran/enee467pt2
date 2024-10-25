@@ -47,7 +47,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/TrackRequest.srv"
 )
 
-add_executable(draw_shape src/ur3e_move_interface.cpp)
+add_executable(draw_shape
+  src/ur3e_move_interface.cpp
+  src/examples.cpp
+  src/lab8.cpp
+)
 ament_target_dependencies(draw_shape "${CORE_DEPENDENCIES}" "${UR3E_MOVE_INTERFACE_DEPS}")
 target_include_directories(draw_shape
   PUBLIC

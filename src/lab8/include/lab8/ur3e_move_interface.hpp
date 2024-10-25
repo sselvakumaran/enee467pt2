@@ -53,13 +53,6 @@ public:
 
 private:
   /**
-   * @brief Use this for the MoveGroupInterface node to fully initialize before executing any of
-   *        the drawing functions.
-   *
-   */
-  void waitForMoveGroupInterface();
-
-  /**
    * @brief Plans and generates a trajectory to move to a joint-space target.
    *
    * @param target_joint_positions Vector of joint positions in radians
@@ -118,14 +111,12 @@ private:
    */
   bool sendEEFTrackRequest(const lab8::srv::TrackRequest::Request::SharedPtr& request);
 
-  bool move_group_interface_initialized_ {false};
   bool tracking_service_available_ {false};
 
   double velocity_scaling_factor_ {0.1};
   double acceleration_scaling_factor_ {0.1};
 
   rclcpp::Client<lab8::srv::TrackRequest>::SharedPtr track_eef_client_ {nullptr};
-  // rclcpp::CallbackGroup::SharedPtr service_callback_group_ {nullptr};
 
   moveit::planning_interface::MoveGroupInterfacePtr move_group_interface_ {nullptr};
   trajectory_processing::TimeOptimalTrajectoryGeneration time_optimal_trajectory_generation_;
