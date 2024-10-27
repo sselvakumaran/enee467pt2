@@ -37,7 +37,10 @@ HandEyeCalibNode::HandEyeCalibNode()
   this->declare_parameter("robot_base_frame", "base_link", param_description);
 
   param_description.description = "Name of the robot end-effector frame";
-  this->declare_parameter("robot_gripper_frame", "wrist_3_link", param_description);
+  this->declare_parameter("robot_gripper_frame", "tool0", param_description);
+
+  param_description.description = "Minimum number of measurements for calibration";
+  this->declare_parameter("measurements_required", 15, param_description);
 
   workspace_dir_ = this->get_parameter("workspace_dir").as_string();
 
@@ -261,11 +264,13 @@ void HandEyeCalibNode::captureVerificationMeasure()
 
 void HandEyeCalibNode::calibrateHandEye()
 {
-  if (measures_captured_quantity_ < 3) {
+  int required_measures = this->get_parameter("measurements_required").as_int();
+
+  if (measures_captured_quantity_ < required_measures) {
     RCLCPP_WARN(this->get_logger(), "Calibration failed: Insufficient measurements.");
     RCLCPP_INFO_STREAM(
       this->get_logger(),
-      "Get " << 3 - measures_captured_quantity_ << " more measurements and try again.");
+      "Get " << required_measures - measures_captured_quantity_ << " more measurements and try again.");
 
     is_calibration_complete_ = false;
 
