@@ -286,7 +286,8 @@ void HandEyeCalibNode::calibrateHandEye()
     cv::calibrateHandEye(
       base2gripper_frame_rmatxs_, base2gripper_frame_tvecs_,
       cam2gripper_frame_rmatxs_, cam2gripper_frame_tvecs_,
-      base2cam_rotation_matrix, base2cam_translation_vector);
+      base2cam_rotation_matrix, base2cam_translation_vector,
+      cv::CALIB_HAND_EYE_PARK);
   }
   catch (const cv::Exception& exception) {
     std::cerr << exception.what();
