@@ -32,11 +32,13 @@ private:
 
   void getBase2GripperFrame();
   void getGripper2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg);
-  void captureMeasure();
+  void captureCalibrationMeasure();
+  void captureVerificationMeasure();
   void calibrateHandEye();
   void verifyCalibration();
   void broadcastBase2CameraFrame();
-  void saveOutput();
+  void saveCalibrationOutput();
+  void saveVerificationOutput();
 
   void resetMeasurements();
 
@@ -45,12 +47,13 @@ private:
   bool is_base2gripper_frame_available_ {false};
   bool is_cam2gripper_frame_available_ {false};
   bool is_calibration_complete_ {false};
+  bool is_verification_complete_ {false};
 
   int marker_id_ {};
   int measures_captured_quantity_ {};
 
-  std::string robot_base_frame_ {"base_link"};
-  std::string robot_gripper_frame_ {"wrist_3_link"};
+  std::string robot_base_frame_ {};
+  std::string robot_gripper_frame_ {};
   std::string workspace_dir_ {};
 
   geometry_msgs::msg::Transform base2gripper_transform_ {};
@@ -73,6 +76,11 @@ private:
 
   std::vector<Eigen::Quaterniond> estimated_eef_orientations_ {};
   std::vector<Eigen::Quaterniond> actual_eef_orientations_ {};
+
+  Eigen::Vector<double, 7> mean_error_vector_ {Eigen::Vector<double, 7>::Zero()};
+  Eigen::Vector<double, 7> least_squares_vector_ {Eigen::Vector<double, 7>::Zero()};
+
+  Eigen::Matrix<double, 7, 7> covariance_matrix_ {Eigen::Matrix<double, 7, 7>::Zero()};
 
   std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster_ {nullptr};
   geometry_msgs::msg::TransformStamped tf_static_transform_ {};

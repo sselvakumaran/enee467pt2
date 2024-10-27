@@ -69,7 +69,11 @@ void HandEyeCalibNode::serviceCallback(
   switch (request->action) {
 
   case (lab7::srv::HandEyeCalib::Request::CAPTURE):
-    captureMeasure();
+    if (!is_calibration_complete_)
+      captureCalibrationMeasure();
+    else
+      captureVerificationMeasure();
+
     break;
 
   case (lab7::srv::HandEyeCalib::Request::CALIBRATE):
@@ -92,7 +96,10 @@ void HandEyeCalibNode::serviceCallback(
     break;
 
   case (lab7::srv::HandEyeCalib::Request::SAVE):
-    saveOutput();
+    if (!is_verification_complete_)
+      saveCalibrationOutput();
+    else
+      saveVerificationOutput();
     break;
 
   default:
@@ -194,7 +201,7 @@ void HandEyeCalibNode::getGripper2CameraFrame(const aruco_opencv_msgs::msg::Aruc
   return;
 }
 
-void HandEyeCalibNode::captureMeasure()
+void HandEyeCalibNode::captureCalibrationMeasure()
 {
   if (!is_base2gripper_frame_available_ || !is_cam2gripper_frame_available_) {
     RCLCPP_WARN(
@@ -205,27 +212,48 @@ void HandEyeCalibNode::captureMeasure()
   }
 
   cv::Affine3d base2gripper_frame_mat {};
-  cv::eigen2cv(base2cam_frame_.matrix(), base2gripper_frame_mat.matrix);
+  cv::eigen2cv(base2gripper_frame_.matrix(), base2gripper_frame_mat.matrix);
 
   cv::Affine3d cam2gripper_frame_mat {};
   cv::eigen2cv(cam2gripper_frame_.matrix(), cam2gripper_frame_mat.matrix);
 
+  base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
+  base2gripper_frame_rmatxs_.emplace_back(base2gripper_frame_mat.rotation());
+
+  cam2gripper_frame_tvecs_.emplace_back(cam2gripper_frame_mat.translation());
+  cam2gripper_frame_rmatxs_.emplace_back(cam2gripper_frame_mat.rotation());
+
+  measures_captured_quantity_++;
+
+  RCLCPP_INFO(this->get_logger(), "Measure captured successfully.");
+  RCLCPP_INFO_STREAM(this->get_logger(), "Measures captured: " << measures_captured_quantity_);
+}
+
+void HandEyeCalibNode::captureVerificationMeasure()
+{
   if (!is_calibration_complete_) {
-    base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
-    base2gripper_frame_rmatxs_.emplace_back(base2gripper_frame_mat.rotation());
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Calibration needs to be done first before capturing measures for verification.");
 
-    cam2gripper_frame_tvecs_.emplace_back(cam2gripper_frame_mat.translation());
-    cam2gripper_frame_rmatxs_.emplace_back(cam2gripper_frame_mat.rotation());
+    return;
   }
-  else {
-    auto estimated_eef_pose {base2cam_frame_ * cam2gripper_frame_};
 
-    estimated_eef_positions_.emplace_back(estimated_eef_pose.translation());
-    estimated_eef_orientations_.emplace_back(estimated_eef_pose.rotation());
+  if (!is_base2gripper_frame_available_ || !is_cam2gripper_frame_available_) {
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Measure capture failed: One/Both of the frames is unavailable, try again.");
 
-    actual_eef_positions_.emplace_back(base2gripper_frame_.translation());
-    actual_eef_orientations_.emplace_back(base2gripper_frame_.rotation());
+    return;
   }
+
+  auto estimated_eef_pose {base2cam_frame_ * cam2gripper_frame_};
+
+  estimated_eef_positions_.emplace_back(estimated_eef_pose.translation());
+  estimated_eef_orientations_.emplace_back(estimated_eef_pose.rotation());
+
+  actual_eef_positions_.emplace_back(base2gripper_frame_.translation());
+  actual_eef_orientations_.emplace_back(base2gripper_frame_.rotation());
 
   measures_captured_quantity_++;
 
