@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 
 #include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
@@ -347,7 +348,7 @@ std::string HandEyeCalibNode::createTimeStamp()
   return timeStamp.str();
 }
 
-void HandEyeCalibNode::saveOutput()
+void HandEyeCalibNode::saveCalibrationOutput()
 {
   if (!is_calibration_complete_) {
     RCLCPP_WARN(this->get_logger(), "Calibration is incomplete, not saving the file.");
@@ -359,9 +360,9 @@ void HandEyeCalibNode::saveOutput()
     std::filesystem::create_directories(workspace_dir_ + "/output/lab7");
 
   std::string output_file_name {
-    workspace_dir_ + "/output/lab7/frame-" + createTimeStamp() + ".yaml"};
+    workspace_dir_ + "/output/lab7/frame-" + createTimeStamp()};
 
-  cv::FileStorage output_file {output_file_name, cv::FileStorage::WRITE};
+  cv::FileStorage output_file {output_file_name + ".yaml", cv::FileStorage::WRITE};
 
   if (!output_file.isOpened()) {
     RCLCPP_FATAL(this->get_logger(), "Failed to write output, unable to write a new output file.");
@@ -370,8 +371,45 @@ void HandEyeCalibNode::saveOutput()
   }
 
   output_file.writeComment("\nTransformation from base to camera frame");
-  output_file << base2cam_frame_mat_.matrix;
+  output_file << "estimated_transformation" << base2cam_frame_mat_.matrix;
   output_file.release();
+
+  std::ofstream output_file_txt {output_file_name + ".txt"};
+
+  if (output_file_txt.is_open())
+    return;
+
+  output_file << "Estimated Transformation: \n" << base2cam_frame_mat_.matrix << '\n';
+  output_file_txt.close();
+}
+
+void HandEyeCalibNode::saveVerificationOutput()
+{
+  if (!is_calibration_complete_ || !is_verification_complete_) {
+    RCLCPP_WARN(this->get_logger(), "Calibration/verification is incomplete, not saving the file.");
+
+    return;
+  }
+
+  std::string output_file_name {
+    workspace_dir_ + "/output/lab7/verification-" + createTimeStamp() + ".txt"};
+
+  std::ofstream output_txt {output_file_name};
+
+  if (!output_txt.is_open()) {
+    RCLCPP_FATAL(this->get_logger(), "Failed to write output, unable to write a new output file.");
+
+    return;
+  }
+
+  output_txt << "Mean error vector: \n"
+             << mean_error_vector_ << '\n'
+             << "Covariance matrix: " << '\n'
+             << covariance_matrix_ << '\n'
+             << "Least squares error vector:" << '\n'
+             << least_squares_vector_ << '\n';
+
+  output_txt.close();
 }
 
 int main(int argc, char** argv)
