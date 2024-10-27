@@ -197,8 +197,6 @@ void HandEyeCalibNode::getGripper2CameraFrame(const aruco_opencv_msgs::msg::Aruc
   }
 
   is_cam2gripper_frame_available_ = false;
-
-  return;
 }
 
 void HandEyeCalibNode::captureCalibrationMeasure()
