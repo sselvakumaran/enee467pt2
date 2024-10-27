@@ -47,7 +47,7 @@ def generate_launch_description():
       {"measurements_required": 15},
       {"marker_id": 5},
       {"robot_base_frame": 'base_link'},
-      {"robot_gripper_frame": 'wrist_3_link'}
+      {"robot_gripper_frame": 'tool0'}
     ]
   )
 
