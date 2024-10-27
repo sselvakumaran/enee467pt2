@@ -44,6 +44,7 @@ def generate_launch_description():
     executable='hand_eye_calib',
     parameters=[
       {"workspace_dir": EnvironmentVariable('ROS_WS')},
+      {"measurements_required": 15},
       {"marker_id": 5},
       {"robot_base_frame": 'base_link'},
       {"robot_gripper_frame": 'wrist_3_link'}
