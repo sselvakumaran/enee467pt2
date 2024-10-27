@@ -323,9 +323,9 @@ void HandEyeCalibNode::broadcastBase2CameraFrame()
   tf_static_transform_.header.frame_id = robot_base_frame_;
   tf_static_transform_.child_frame_id = "camera";
 
-  tf_static_transform_.transform.translation.x = base2cam_frame_.translation()[0];
-  tf_static_transform_.transform.translation.y = base2cam_frame_.translation()[1];
-  tf_static_transform_.transform.translation.z = base2cam_frame_.translation()[2];
+  tf_static_transform_.transform.translation.x = base2cam_frame_.translation()(0);
+  tf_static_transform_.transform.translation.y = base2cam_frame_.translation()(1);
+  tf_static_transform_.transform.translation.z = base2cam_frame_.translation()(2);
 
   Eigen::Quaterniond rotation {base2cam_frame_.rotation()};
   tf_static_transform_.transform.rotation.w = rotation.w();
