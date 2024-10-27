@@ -305,12 +305,13 @@ void HandEyeCalibNode::calibrateHandEye()
   cv::cv2eigen(base2cam_frame_mat_.matrix, base2cam_frame_.matrix());
 
   is_calibration_complete_ = true;
+  measures_captured_quantity_ = 0;
+
   RCLCPP_INFO(
-    this->get_logger(), "Hand-eye calibration compelte, now you can capture frames for verification");
+    this->get_logger(), "Hand-eye calibration complete, now you can capture frames for verification");
 
   RCLCPP_INFO(this->get_logger(), "Estimated frame will now be broadcasted.");
 
-  measures_captured_quantity_ = 0;
 }
 
 void HandEyeCalibNode::broadcastBase2CameraFrame()
