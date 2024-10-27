@@ -135,7 +135,7 @@ void HandEyeCalibNode::getBase2GripperFrame()
   try {
     base2gripper_transform_ =
       tf_buffer_->lookupTransform(
-        robot_base_frame_, robot_gripper_frame_, tf2::TimePointZero).transform;
+        robot_gripper_frame_, robot_base_frame_, tf2::TimePointZero).transform;
   }
   catch (const tf2::TransformException& ex) {
     RCLCPP_WARN_STREAM(
