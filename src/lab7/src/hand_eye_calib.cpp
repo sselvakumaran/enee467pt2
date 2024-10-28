@@ -376,10 +376,10 @@ void HandEyeCalibNode::saveCalibrationOutput()
 
   std::ofstream output_file_txt {output_file_name + ".txt"};
 
-  if (output_file_txt.is_open())
+  if (!output_file_txt.is_open())
     return;
 
-  output_file << "Estimated Transformation: \n" << base2cam_frame_mat_.matrix << '\n';
+  output_file_txt << "Estimated Transformation: \n" << base2cam_frame_mat_.matrix << '\n';
   output_file_txt.close();
 }
 
