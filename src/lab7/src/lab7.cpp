@@ -27,7 +27,7 @@ void findCovarianceMatrix(
 
 }
 
-void findLeastSquaresError(
+void findLeastSquaresErrorVector(
   const std::vector<Eigen::Vector<double, 7>>& error_vecs_in,
   Eigen::Vector<double, 7>& least_squares_vec_out)
 {
@@ -75,7 +75,7 @@ void HandEyeCalibNode::verifyCalibration()
 
   findMeanErrorVector(error_vecs, mean_error_vector_);
   findCovarianceMatrix(error_vecs, mean_error_vector_, covariance_matrix_);
-  findLeastSquaresError(error_vecs, least_squares_vector_);
+  findLeastSquaresErrorVector(error_vecs, least_squares_vector_);
 
   RCLCPP_INFO(this->get_logger(), "Verification results can be saved now.");
 
