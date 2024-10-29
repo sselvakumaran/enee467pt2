@@ -30,8 +30,8 @@ private:
     const std::shared_ptr<lab7::srv::HandEyeCalib::Request> request,
     std::shared_ptr<lab7::srv::HandEyeCalib::Response> response);
 
-  void getBase2GripperFrame();
-  void getGripper2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg);
+  void getBase2EndEffectorFrame();
+  void getEndEffector2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg);
   void captureCalibrationMeasure();
   void captureVerificationMeasure();
   void calibrateHandEye();
@@ -44,8 +44,8 @@ private:
 
   std::string createTimeStamp();
 
-  bool is_base2gripper_frame_available_ {false};
-  bool is_cam2gripper_frame_available_ {false};
+  bool is_base2eef_frame_available_ {false};
+  bool is_cam2eef_frame_available_ {false};
   bool is_calibration_complete_ {false};
   bool is_verification_complete_ {false};
 
@@ -53,23 +53,23 @@ private:
   int measures_captured_quantity_ {};
 
   std::string robot_base_frame_ {};
-  std::string robot_gripper_frame_ {};
+  std::string robot_eef_frame_ {};
   std::string workspace_dir_ {};
 
-  geometry_msgs::msg::Transform base2gripper_transform_ {};
-  geometry_msgs::msg::Pose cam2gripper_pose_ {};
+  geometry_msgs::msg::Transform base2eef_transform_ {};
+  geometry_msgs::msg::Pose cam2eef_pose_ {};
 
-  Eigen::Affine3d base2gripper_frame_ {Eigen::Affine3d::Identity()};
-  Eigen::Affine3d cam2gripper_frame_ {Eigen::Affine3d::Identity()};
+  Eigen::Affine3d base2eef_frame_ {Eigen::Affine3d::Identity()};
+  Eigen::Affine3d cam2eef_frame_ {Eigen::Affine3d::Identity()};
   Eigen::Affine3d base2cam_frame_ {Eigen::Affine3d::Identity()};
 
   // Stores exactly the same matrix of base2cam_frame_ but in cv::Affine3d format.
   cv::Affine3d base2cam_frame_mat_ {cv::Affine3d::Identity()};
 
-  std::vector<cv::Mat> base2gripper_frame_tvecs_ {};
-  std::vector<cv::Mat> base2gripper_frame_rmatxs_ {};
-  std::vector<cv::Mat> cam2gripper_frame_tvecs_ {};
-  std::vector<cv::Mat> cam2gripper_frame_rmatxs_ {};
+  std::vector<cv::Mat> base2eef_frame_tvecs_ {};
+  std::vector<cv::Mat> base2eef_frame_rmatxs_ {};
+  std::vector<cv::Mat> cam2eef_frame_tvecs_ {};
+  std::vector<cv::Mat> cam2eef_frame_rmatxs_ {};
 
   std::vector<Eigen::Vector3d> estimated_eef_positions_ {};
   std::vector<Eigen::Vector3d> actual_eef_positions_ {};
