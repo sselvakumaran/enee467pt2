@@ -21,7 +21,7 @@ void findCovarianceMatrix(
   if (error_vecs_in.empty())
     return;
 
-  covariance_matrix_out = Eigen::Matrix<double, 7, 7>::Zero(); // Update this with calculated value
+  covariance_matrix_out = Eigen::Matrix<double, 7, 7>::Zero();
 
   /// TODO: Find the covariance matrix using the error vectors.
 
