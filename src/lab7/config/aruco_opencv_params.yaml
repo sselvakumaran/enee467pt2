@@ -1,0 +1,5 @@
+aruco_tracker:
+    ros__parameters:
+      cam_base_topic: "/image_raw"
+      marker_size: 5.0000000745058060e-02
+      marker_dict: "APRILTAG_16h5"

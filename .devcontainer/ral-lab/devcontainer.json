@@ -18,7 +18,10 @@
 		"--volume=/run/user/${localEnv:UID}:/run/user/${localEnv:UID}",
 		"--volume=/dev:/dev:rw",
 		"--ipc=host",
-    // "--device=/dev/video0", // Uncomment for webcam access (Needs to be plugged in first)
+    "--device=/dev/video0", // Uncomment for webcam access (Needs to be plugged in first)
+    "--device=/dev/video1", // Uncomment for webcam access (Needs to be plugged in first)
+    "--device=/dev/video2", // Uncomment for webcam access (Needs to be plugged in first)
+    "--device=/dev/video3", // Uncomment for webcam access (Needs to be plugged in first)
 		"--device=/dev/dri"
 	],
 

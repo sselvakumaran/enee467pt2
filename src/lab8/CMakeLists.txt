@@ -1,97 +1,87 @@
 cmake_minimum_required(VERSION 3.11)
 project(lab8)
 
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Set packages to be installed
-set(PACKAGE_DEPENDENCIES
-  ament_cmake
-  rclcpp
-  std_msgs
-  Eigen3
-  angles
-  geometry_msgs
-  tf2
-  tf2_ros
-  tf2_eigen
-  tf2_geometry_msgs
-  aruco_opencv_msgs
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-  ament_index_cpp
+# package dependencies
+set(UR3E_MOVE_INTERFACE_DEPS
+  control_msgs
+  Eigen3
+  moveit_core
+  moveit_msgs
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  tf2_geometry_msgs
+  tf2_ros
 )
 
-find_package(rosidl_default_generators REQUIRED)
+set(EEF_POSE_TRACKER_DEPS
+  tf2_geometry_msgs
+  tf2_ros
+  Matplot++
+)
+
+set(CORE_DEPENDENCIES
+  ament_cmake
+  rclcpp
+  Boost
+  rosidl_default_generators
+  "${UR3E_MOVE_INTERFACE_DEPS}"
+  "${EEF_POSE_TRACKER_DEPS}"
+)
 
 # find dependencies
-foreach(dependency IN ITEMS ${PACKAGE_DEPENDENCIES})
+foreach(dependency IN ITEMS ${CORE_DEPENDENCIES} ${UR3E_MOVE_INTERFACE_DEPS} ${EEF_POSE_TRACKER_DEPS})
   find_package(${dependency} REQUIRED)
 endforeach()
 
-# Create clangd compilation
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Enable compile_commmands
-# execute_process(COMMAND cmake -E create_symlink
-#                 "${PROJECT_BINARY_DIR}/compile_commands.json"
-#                 "${PROJECT_SOURCE_DIR}/compile_commands.json")
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/TrackRequest.srv"
+)
 
-add_executable(aruco_tf src/aruco_tf.cpp)
-ament_target_dependencies(aruco_tf ${PACKAGE_DEPENDENCIES})
-target_include_directories(aruco_tf
+add_executable(draw_shape
+  src/ur3e_move_interface.cpp
+  src/examples.cpp
+  src/lab8.cpp
+)
+ament_target_dependencies(draw_shape "${CORE_DEPENDENCIES}" "${UR3E_MOVE_INTERFACE_DEPS}")
+target_include_directories(draw_shape
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
-# add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
-# ament_target_dependencies(
-#     turtle_tf2_broadcaster
-#     geometry_msgs
-#     rclcpp
-#     tf2
-#     tf2_ros
-#     turtlesim
-# )
+add_executable(track_eef_pose src/eef_pose_tracker.cpp)
+ament_target_dependencies(track_eef_pose "${CORE_DEPENDENCIES}" "${EEF_POSE_TRACKER_DEPS}")
+target_include_directories(track_eef_pose
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-# add_executable(turtle_tf2_listener src/turtle_tf2_listener.cpp)
-# ament_target_dependencies(
-#     turtle_tf2_listener
-#     geometry_msgs
-#     rclcpp
-#     tf2
-#     tf2_ros
-#     turtlesim
-# )
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
+
+target_link_libraries(draw_shape "${cpp_typesupport_target}")
+target_link_libraries(track_eef_pose "${cpp_typesupport_target}" Matplot++::matplot)
 
 install(TARGETS
-  aruco_tf
-  # turtle_tf2_broadcaster
-  # turtle_tf2_listener
+  draw_shape
+  track_eef_pose
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
   launch
-  calibration
-  include
   DESTINATION share/${PROJECT_NAME}
 )
 
-rosidl_generate_interfaces("${PROJECT_NAME}"
-"msg/Detection.msg"
-DEPENDENCIES aruco_opencv_msgs
-)
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
+ament_export_dependencies(rosidl_default_runtime)
 ament_package()

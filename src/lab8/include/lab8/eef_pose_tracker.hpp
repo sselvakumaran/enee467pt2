@@ -3,11 +3,13 @@
 #include <fstream>
 
 #include <rclcpp/rclcpp.hpp>
+
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
+
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
-#include "lab7/srv/track_request.hpp"
+#include "lab8/srv/track_request.hpp"
 
 class EEFPoseTracker : public rclcpp::Node {
 
@@ -16,8 +18,8 @@ public:
 
 private:
   void requestCallback(
-    const std::shared_ptr<lab7::srv::TrackRequest::Request> request,
-    std::shared_ptr<lab7::srv::TrackRequest::Response> response);
+    const std::shared_ptr<lab8::srv::TrackRequest::Request> request,
+    std::shared_ptr<lab8::srv::TrackRequest::Response> response);
 
   void timerCallback();
   void plotData();
@@ -46,6 +48,6 @@ private:
   std::vector<double> y_points_ {};
   std::vector<double> z_points_ {};
 
-  rclcpp::Service<lab7::srv::TrackRequest>::SharedPtr track_service_ {nullptr};
+  rclcpp::Service<lab8::srv::TrackRequest>::SharedPtr track_service_ {nullptr};
 
 };

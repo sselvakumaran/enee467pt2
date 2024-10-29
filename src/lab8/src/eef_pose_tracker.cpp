@@ -2,14 +2,14 @@
 
 #include <matplot/matplot.h>
 
-#include "lab7/eef_pose_tracker.hpp"
+#include "lab8/eef_pose_tracker.hpp"
 
 EEFPoseTracker::EEFPoseTracker()
 : Node ("eef_pose_tracker")
 {
   using namespace std::chrono_literals;
 
-  track_service_ = this->create_service<lab7::srv::TrackRequest>(
+  track_service_ = this->create_service<lab8::srv::TrackRequest>(
     "track_eef",
     std::bind(&EEFPoseTracker::requestCallback, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -23,8 +23,8 @@ EEFPoseTracker::EEFPoseTracker()
 }
 
 void EEFPoseTracker::requestCallback(
-  const std::shared_ptr<lab7::srv::TrackRequest::Request> request,
-  std::shared_ptr<lab7::srv::TrackRequest::Response> response)
+  const std::shared_ptr<lab8::srv::TrackRequest::Request> request,
+  std::shared_ptr<lab8::srv::TrackRequest::Response> response)
 {
   if (should_track_ == request->status) {
     RCLCPP_WARN(
@@ -137,17 +137,17 @@ void EEFPoseTracker::plotData()
 
   switch (plot_axis_x_) {
 
-  case lab7::srv::TrackRequest::Request::X_AXIS:
+  case lab8::srv::TrackRequest::Request::X_AXIS:
     axis_x_points = x_points_;
     axis_x_label = "X Axis";
     break;
 
-  case lab7::srv::TrackRequest::Request::Y_AXIS:
+  case lab8::srv::TrackRequest::Request::Y_AXIS:
     axis_x_points = y_points_;
     axis_x_label = "Y Axis";
     break;
 
-  case lab7::srv::TrackRequest::Request::Z_AXIS:
+  case lab8::srv::TrackRequest::Request::Z_AXIS:
     axis_x_points = z_points_;
     axis_x_label = "Z Axis";
     break;
@@ -159,17 +159,17 @@ void EEFPoseTracker::plotData()
 
   switch (plot_axis_y_) {
 
-  case lab7::srv::TrackRequest::Request::X_AXIS:
+  case lab8::srv::TrackRequest::Request::X_AXIS:
     axis_y_points = x_points_;
     axis_y_label = "X Axis";
     break;
 
-  case lab7::srv::TrackRequest::Request::Y_AXIS:
+  case lab8::srv::TrackRequest::Request::Y_AXIS:
     axis_y_points = y_points_;
     axis_y_label = "Y Axis";
     break;
 
-  case lab7::srv::TrackRequest::Request::Z_AXIS:
+  case lab8::srv::TrackRequest::Request::Z_AXIS:
     axis_y_points = z_points_;
     axis_y_label = "Z Axis";
     break;
