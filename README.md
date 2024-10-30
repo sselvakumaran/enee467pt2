@@ -23,11 +23,30 @@ git clone https://github.com/ENEE467/lab-workspace.git ~/<workspace name>
 # Lab 7
 ## REPORT:
 ### 1. Give the pose in World Coordinates of the camera as determined in the initial calibration.
-
+(0.06013711189526902, 0.6189519265470212, 1.266066252511441)
 ### 2. Compute and include in your report the square root of the sum of the squares of the components of the quaternion. How close is it to one?
-
+sqrt(sum(q.^2)) = 20.3724
+This is quite a ways away from 1, but likely mostly due to the LSE of 19.5459 for the last component.
 ### 3. Give the sample mean and sample covariance of the errors in the calibration as determined by the second set of data points.
+Mean error vector: 
+ 0.363706
+ 0.853423
+  1.78729
+-0.424018
+-0.152155
+-0.842074
+  2.33657
 
+Covariance matrix: 
+  0.273933   0.133482    0.44935 -0.0711276  0.0799115  -0.112811   0.542731
+  0.133482   0.611983    1.11569  -0.298115  -0.159228  -0.587114    1.47603
+   0.44935    1.11569    2.39474  -0.526562  -0.231846   -1.14549    3.05489
+-0.0711276  -0.298115  -0.526562   0.173779  0.0740058   0.343596  -0.746645
+ 0.0799115  -0.159228  -0.231846  0.0740058   0.114299   0.173656  -0.300766
+ -0.112811  -0.587114   -1.14549   0.343596   0.173656     1.0582   -1.75418
+  0.542731    1.47603    3.05489  -0.746645  -0.300766   -1.75418    4.16758
 ### 4. Give your assessment of the quality of the calibration.
   a. How close to zero is the sample mean of the error? Note that a common test of the size of a vector is its length (In mathematics, it’s norm).
+The norm of our Mean error vector is 3.2290, which is relatively low and most of the error comes in the z direction.
   b. Are the position measurements more reliable than the orientation measurements?
+On average, the orientation measurements were more accurate.
