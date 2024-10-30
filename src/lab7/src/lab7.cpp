@@ -66,7 +66,7 @@ void HandEyeCalibNode::verifyCalibration()
    * - Reference positions of the end-effector are stored in `actual_eef_positions_`
    * - Reference orientations of the end-effector are stored in `actual_eef_orientations_`
    *
-   * - Estimated positions of the end-effector are stored in `estimated_eef_positions_`
+   * - Estimated positions of the end-effector std::vector<double> target_joint_positions {M_PI_2, -M_PI_2, M_PI_2, -M_PI, -M_PI_2, 0};are stored in `estimated_eef_positions_`
    * - Estimated orientations of the end-effector are stored in `estimated_eef_orientations_`
    */
 
