@@ -17,7 +17,7 @@ usb_cam:
       gain: -1
       auto_white_balance: true
       white_balance: 4000
-      autoexposure: true
+      autoexposure: false
       exposure: 100
       autofocus: false
-      focus: 255
+      focus: 0
