@@ -49,5 +49,6 @@ colcon build --symlink-install
 echo "if [ -f $ROS_WS/install/setup.bash ]; then source $ROS_WS/install/setup.bash; fi" >> ~/.bashrc
 echo "if [ -d $ROS_WS ]; then cd $ROS_WS; fi" >> ~/.bashrc
 echo "export ROS_WS=$ROS_WS" >> ~/.bashrc
+echo "export ROS_LOCALHOST_ONLY=1" >> ~/.bashrc
 
 printf "\nSetup complete, workspace is now ready to use! \n"
