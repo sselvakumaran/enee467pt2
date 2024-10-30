@@ -66,7 +66,7 @@ def generate_launch_description():
       "description_package": 'lab_description',
       "description_file": 'lab.urdf.xacro',
       "launch_rviz": 'false',
-      "kinematics_params_file": PathJoinSubstitution(EnvironmentVariable('HOME'), '/ur3e-kinematics-config/ur3e_mrc.yaml')
+      "kinematics_params_file": PathJoinSubstitution([EnvironmentVariable('HOME'), 'ur3e-kinematics-config', 'ur3e_mrc.yaml'])
     }.items(),
   )
 
