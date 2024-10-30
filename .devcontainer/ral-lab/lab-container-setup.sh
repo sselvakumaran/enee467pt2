@@ -17,6 +17,15 @@ then
   exit 1
 fi
 
+# Some settings for the lab camera
+if [ -d /dev/video0 ]
+then
+  v4l2-ctl -d /dev/video0 --set-ctrl focus_automatic_continuous=0
+  v4l2-ctl -d /dev/video0 --set-ctrl focus_absolute=0
+  v4l2-ctl -d /dev/video0 --set-ctrl auto_exposure=1
+  v4l2-ctl -d /dev/video0 --set-ctrl exposure_dynamic_framerate=0
+fi
+
 cd $ROS_WS
 
 # Clean up previous workspace build artifacts if they exist
