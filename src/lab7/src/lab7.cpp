@@ -10,7 +10,12 @@ void findMeanErrorVector(
   mean_error_vec_out = Eigen::Vector<double, 7>::Zero();
 
   /// TODO: Find the mean error vector by averaging the error vectors.
+  double INV_SIZE = 1.0 / 7.0;
 
+  for (const auto& vec : error_vecs_in)
+    mean_error_vec_out += vec;
+
+  mean_error_vec_out *= INV_SIZE;
 }
 
 void findCovarianceMatrix(
@@ -24,7 +29,14 @@ void findCovarianceMatrix(
   covariance_matrix_out = Eigen::Matrix<double, 7, 7>::Zero();
 
   /// TODO: Find the covariance matrix using the error vectors.
+  double INV_POPULATION = 1.0 / 6.0;
 
+  for (const auto& vec : error_vecs_in) {
+    Eigen::Vector<double, 7> centered = vec - mean_error_vec_in;
+    covariance_matrix_out += centered * centered.transpose();
+  }
+
+  covariance_matrix_out *= INV_POPULATION;
 }
 
 void findLeastSquaresErrorVector(
@@ -40,6 +52,9 @@ void findLeastSquaresErrorVector(
    * TODO: Apply the least squares method to each component of the error vector separately to form
    *       the least squares error vector.
    */
+
+  for (const auto& vec : error_vecs_in)
+    least_squares_vec_out += vec.cwiseProduct(vec);
 
 }
 
