@@ -16,12 +16,13 @@
 		"--security-opt=apparmor:unconfined",
 		"--volume=/tmp/.X11-unix:/tmp/.X11-unix",
 		"--volume=/run/user/${localEnv:UID}:/run/user/${localEnv:UID}",
+    "--volume=${localEnv:HOME}/ur3e-kinematics-config:/home/467-terp/ur3e-kinematics-config",
 		"--volume=/dev:/dev:rw",
 		"--ipc=host",
     "--device=/dev/video0", // Uncomment for webcam access (Needs to be plugged in first)
     "--device=/dev/video1", // Uncomment for webcam access (Needs to be plugged in first)
-    "--device=/dev/video2", // Uncomment for webcam access (Needs to be plugged in first)
-    "--device=/dev/video3", // Uncomment for webcam access (Needs to be plugged in first)
+    // "--device=/dev/video2", // Uncomment for webcam access (Needs to be plugged in first)
+    // "--device=/dev/video3", // Uncomment for webcam access (Needs to be plugged in first)
 		"--device=/dev/dri"
 	],
 

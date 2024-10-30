@@ -20,7 +20,7 @@ HandEyeCalibNode::HandEyeCalibNode()
 
   marker_pose_sub_ = this->create_subscription<aruco_opencv_msgs::msg::ArucoDetection>(
     "aruco_detections", 10,
-    std::bind(&HandEyeCalibNode::getGripper2CameraFrame, this, std::placeholders::_1));
+    std::bind(&HandEyeCalibNode::getEndEffector2CameraFrame, this, std::placeholders::_1));
 
   hand_eye_calib_service_ = this->create_service<lab7::srv::HandEyeCalib>(
     "hand_eye_calib",
@@ -38,7 +38,7 @@ HandEyeCalibNode::HandEyeCalibNode()
   this->declare_parameter("robot_base_frame", "base_link", param_description);
 
   param_description.description = "Name of the robot end-effector frame";
-  this->declare_parameter("robot_gripper_frame", "tool0", param_description);
+  this->declare_parameter("robot_eef_frame", "tool0", param_description);
 
   param_description.description = "Minimum number of measurements for calibration";
   this->declare_parameter("measurements_required", 15, param_description);
@@ -53,7 +53,7 @@ HandEyeCalibNode::HandEyeCalibNode()
   }
 
   robot_base_frame_ = this->get_parameter("robot_base_frame").as_string();
-  robot_gripper_frame_ = this->get_parameter("robot_gripper_frame").as_string();
+  robot_eef_frame_ = this->get_parameter("robot_eef_frame").as_string();
 
   RCLCPP_INFO(this->get_logger(), "Hand-Eye Calibration node initialized.");
 }
@@ -62,7 +62,7 @@ void HandEyeCalibNode::timerCallback()
 {
   marker_id_ = this->get_parameter("marker_id").as_int();
 
-  getBase2GripperFrame();
+  getBase2EndEffectorFrame();
   broadcastBase2CameraFrame();
 }
 
@@ -117,10 +117,10 @@ void HandEyeCalibNode::serviceCallback(
 
 void HandEyeCalibNode::resetMeasurements()
 {
-  base2gripper_frame_tvecs_.clear();
-  base2gripper_frame_rmatxs_.clear();
-  cam2gripper_frame_tvecs_.clear();
-  cam2gripper_frame_rmatxs_.clear();
+  base2eef_frame_tvecs_.clear();
+  base2eef_frame_rmatxs_.clear();
+  cam2eef_frame_tvecs_.clear();
+  cam2eef_frame_rmatxs_.clear();
 
   estimated_eef_positions_.clear();
   actual_eef_positions_.clear();
@@ -134,78 +134,78 @@ void HandEyeCalibNode::resetMeasurements()
   RCLCPP_INFO(this->get_logger(), "Measurements have been reset, you can start over now.");
 }
 
-void HandEyeCalibNode::getBase2GripperFrame()
+void HandEyeCalibNode::getBase2EndEffectorFrame()
 {
   try {
-    base2gripper_transform_ =
+    base2eef_transform_ =
       tf_buffer_->lookupTransform(
-        robot_gripper_frame_, robot_base_frame_, tf2::TimePointZero).transform;
+        robot_eef_frame_, robot_base_frame_, tf2::TimePointZero).transform;
   }
   catch (const tf2::TransformException& ex) {
     RCLCPP_WARN_STREAM(
       this->get_logger(),
-      "Tried to transform " << robot_base_frame_ << " to " << robot_gripper_frame_  << " : "
+      "Tried to transform " << robot_base_frame_ << " to " << robot_eef_frame_  << " : "
                             << ex.what());
 
-    is_base2gripper_frame_available_ = false;
+    is_base2eef_frame_available_ = false;
 
     return;
   }
 
   Eigen::Vector3d translation {
-    base2gripper_transform_.translation.x,
-    base2gripper_transform_.translation.y,
-    base2gripper_transform_.translation.z};
+    base2eef_transform_.translation.x,
+    base2eef_transform_.translation.y,
+    base2eef_transform_.translation.z};
 
   Eigen::Quaterniond rotation {
-    base2gripper_transform_.rotation.w,
-    base2gripper_transform_.rotation.x,
-    base2gripper_transform_.rotation.y,
-    base2gripper_transform_.rotation.z};
+    base2eef_transform_.rotation.w,
+    base2eef_transform_.rotation.x,
+    base2eef_transform_.rotation.y,
+    base2eef_transform_.rotation.z};
 
   rotation.normalize();
 
-  base2gripper_frame_.translation() = translation;
-  base2gripper_frame_.matrix().topLeftCorner<3, 3>() = rotation.toRotationMatrix();
+  base2eef_frame_.translation() = translation;
+  base2eef_frame_.matrix().topLeftCorner<3, 3>() = rotation.toRotationMatrix();
 
-  is_base2gripper_frame_available_ = true;
+  is_base2eef_frame_available_ = true;
 }
 
-void HandEyeCalibNode::getGripper2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg)
+void HandEyeCalibNode::getEndEffector2CameraFrame(const aruco_opencv_msgs::msg::ArucoDetection& msg)
 {
   for (const auto& marker_pose: msg.markers) {
     if (marker_pose.marker_id != marker_id_)
       continue;
 
-    cam2gripper_pose_ = marker_pose.pose;
+    cam2eef_pose_ = marker_pose.pose;
 
     Eigen::Vector3d translation {
-      cam2gripper_pose_.position.x,
-      cam2gripper_pose_.position.y,
-      cam2gripper_pose_.position.z};
+      cam2eef_pose_.position.x,
+      cam2eef_pose_.position.y,
+      cam2eef_pose_.position.z};
 
     Eigen::Quaterniond rotation {
-      cam2gripper_pose_.orientation.w,
-      cam2gripper_pose_.orientation.x,
-      cam2gripper_pose_.orientation.y,
-      cam2gripper_pose_.orientation.z};
+      cam2eef_pose_.orientation.w,
+      cam2eef_pose_.orientation.x,
+      cam2eef_pose_.orientation.y,
+      cam2eef_pose_.orientation.z};
 
     rotation.normalize();
 
-    cam2gripper_frame_.translation() = translation;
-    cam2gripper_frame_.matrix().topLeftCorner<3, 3>() = rotation.toRotationMatrix();
+    cam2eef_frame_.translation() = translation;
+    cam2eef_frame_.matrix().topLeftCorner<3, 3>() = rotation.toRotationMatrix();
 
-    is_cam2gripper_frame_available_ = true;
+    is_cam2eef_frame_available_ = true;
 
     return;
   }
 
-  is_cam2gripper_frame_available_ = false;
+  is_cam2eef_frame_available_ = false;
 }
 
 void HandEyeCalibNode::captureCalibrationMeasure()
 {
-  if (!is_base2gripper_frame_available_ || !is_cam2gripper_frame_available_) {
+  if (!is_base2eef_frame_available_ || !is_cam2eef_frame_available_) {
     RCLCPP_WARN(
       this->get_logger(),
       "Measure capture failed: One/Both of the frames is unavailable, try again.");
@@ -213,17 +213,17 @@ void HandEyeCalibNode::captureCalibrationMeasure()
     return;
   }
 
-  cv::Affine3d base2gripper_frame_mat {};
-  cv::eigen2cv(base2gripper_frame_.matrix(), base2gripper_frame_mat.matrix);
+  cv::Affine3d base2eef_frame_mat {};
+  cv::eigen2cv(base2eef_frame_.matrix(), base2eef_frame_mat.matrix);
 
-  cv::Affine3d cam2gripper_frame_mat {};
-  cv::eigen2cv(cam2gripper_frame_.matrix(), cam2gripper_frame_mat.matrix);
+  cv::Affine3d cam2eef_frame_mat {};
+  cv::eigen2cv(cam2eef_frame_.matrix(), cam2eef_frame_mat.matrix);
 
-  base2gripper_frame_tvecs_.emplace_back(base2gripper_frame_mat.translation());
-  base2gripper_frame_rmatxs_.emplace_back(base2gripper_frame_mat.rotation());
+  base2eef_frame_tvecs_.emplace_back(base2eef_frame_mat.translation());
+  base2eef_frame_rmatxs_.emplace_back(base2eef_frame_mat.rotation());
 
-  cam2gripper_frame_tvecs_.emplace_back(cam2gripper_frame_mat.translation());
-  cam2gripper_frame_rmatxs_.emplace_back(cam2gripper_frame_mat.rotation());
+  cam2eef_frame_tvecs_.emplace_back(cam2eef_frame_mat.translation());
+  cam2eef_frame_rmatxs_.emplace_back(cam2eef_frame_mat.rotation());
 
   measures_captured_quantity_++;
 
@@ -241,7 +241,7 @@ void HandEyeCalibNode::captureVerificationMeasure()
     return;
   }
 
-  if (!is_base2gripper_frame_available_ || !is_cam2gripper_frame_available_) {
+  if (!is_base2eef_frame_available_ || !is_cam2eef_frame_available_) {
     RCLCPP_WARN(
       this->get_logger(),
       "Measure capture failed: One/Both of the frames is unavailable, try again.");
@@ -249,13 +249,13 @@ void HandEyeCalibNode::captureVerificationMeasure()
     return;
   }
 
-  auto estimated_eef_pose {base2cam_frame_ * cam2gripper_frame_};
+  auto estimated_eef_pose {base2cam_frame_ * cam2eef_frame_};
 
   estimated_eef_positions_.emplace_back(estimated_eef_pose.translation());
   estimated_eef_orientations_.emplace_back(estimated_eef_pose.rotation());
 
-  actual_eef_positions_.emplace_back(base2gripper_frame_.translation());
-  actual_eef_orientations_.emplace_back(base2gripper_frame_.rotation());
+  actual_eef_positions_.emplace_back(base2eef_frame_.translation());
+  actual_eef_orientations_.emplace_back(base2eef_frame_.rotation());
 
   measures_captured_quantity_++;
 
@@ -285,8 +285,8 @@ void HandEyeCalibNode::calibrateHandEye()
 
   try {
     cv::calibrateHandEye(
-      base2gripper_frame_rmatxs_, base2gripper_frame_tvecs_,
-      cam2gripper_frame_rmatxs_, cam2gripper_frame_tvecs_,
+      base2eef_frame_rmatxs_, base2eef_frame_tvecs_,
+      cam2eef_frame_rmatxs_, cam2eef_frame_tvecs_,
       base2cam_rotation_matrix, base2cam_translation_vector,
       cv::CALIB_HAND_EYE_PARK);
   }

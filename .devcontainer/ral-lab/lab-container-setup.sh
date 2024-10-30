@@ -17,6 +17,13 @@ then
   exit 1
 fi
 
+# Some settings for the lab camera
+printf "\n\
+v4l2-ctl -d /dev/video0 --set-ctrl focus_automatic_continuous=0\n\
+v4l2-ctl -d /dev/video0 --set-ctrl focus_absolute=0\n\
+v4l2-ctl -d /dev/video0 --set-ctrl auto_exposure=1\n\
+v4l2-ctl -d /dev/video0 --set-ctrl exposure_dynamic_framerate=0\n" >> ~/.bashrc
+
 cd $ROS_WS
 
 # Clean up previous workspace build artifacts if they exist
@@ -42,5 +49,6 @@ colcon build --symlink-install
 echo "if [ -f $ROS_WS/install/setup.bash ]; then source $ROS_WS/install/setup.bash; fi" >> ~/.bashrc
 echo "if [ -d $ROS_WS ]; then cd $ROS_WS; fi" >> ~/.bashrc
 echo "export ROS_WS=$ROS_WS" >> ~/.bashrc
+echo "export ROS_LOCALHOST_ONLY=1" >> ~/.bashrc
 
 printf "\nSetup complete, workspace is now ready to use! \n"
