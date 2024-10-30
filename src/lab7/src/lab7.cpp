@@ -18,7 +18,7 @@ void findCovarianceMatrix(
   const Eigen::Vector<double, 7>& mean_error_vec_in,
   Eigen::Matrix<double, 7, 7>& covariance_matrix_out)
 {
-  if (error_vecs_in.empty())
+  if (error_vecs_in.empty() || !mean_error_vec_in.allFinite())
     return;
 
   covariance_matrix_out = Eigen::Matrix<double, 7, 7>::Zero();
