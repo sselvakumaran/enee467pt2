@@ -14,7 +14,7 @@ def generate_launch_description():
     'table',
     default_value='1',
     description="Table number in the RAL you're working on.",
-    choices=['1', '2', '3', '4', '5', '6']
+    choices=['1', '2', '3', '4', '5', '6', '7']
   )
   launch_description.add_action(table_number_arg)
 
