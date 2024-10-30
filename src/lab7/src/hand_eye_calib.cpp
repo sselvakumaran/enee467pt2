@@ -403,9 +403,9 @@ void HandEyeCalibNode::saveVerificationOutput()
   }
 
   output_txt << "Mean error vector: \n"
-             << mean_error_vector_ << '\n'
+             << mean_error_vector_ << '\n' << '\n'
              << "Covariance matrix: " << '\n'
-             << covariance_matrix_ << '\n'
+             << covariance_matrix_ << '\n' << '\n'
              << "Least squares error vector:" << '\n'
              << least_squares_vector_ << '\n';
 
