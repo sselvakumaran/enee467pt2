@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction
-from launch.substitutions import LaunchConfiguration, PythonExpression, EnvironmentVariable
+from launch.substitutions import LaunchConfiguration, PythonExpression, EnvironmentVariable, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition
@@ -12,14 +12,16 @@ def generate_launch_description():
   simulation_arg = DeclareLaunchArgument(
     'sim',
     default_value='true',
-    description="Draw shapes in simulation or on the real arm"
+    description="Draw shapes in simulation or on the real arm",
+    choices=['true', 'false']
   )
   launch_description.add_action(simulation_arg)
 
   track_eef_arg = DeclareLaunchArgument(
     'track_eef',
     default_value='true',
-    description="Enables end-effector pose tracking"
+    description="Enables end-effector pose tracking",
+    choices=['true', 'false']
   )
   launch_description.add_action(track_eef_arg)
 
@@ -64,6 +66,7 @@ def generate_launch_description():
       "description_package": 'lab_description',
       "description_file": 'lab.urdf.xacro',
       "launch_rviz": 'false',
+      "kinematics_params_file": PathJoinSubstitution(EnvironmentVariable('HOME'), '/ur3e-kinematics-config/ur3e_mrc.yaml')
     }.items(),
   )
 

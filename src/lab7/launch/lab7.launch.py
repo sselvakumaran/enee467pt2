@@ -13,7 +13,8 @@ def generate_launch_description():
   table_number_arg = DeclareLaunchArgument(
     'table',
     default_value='1',
-    description="Table number in the RAL you're working on."
+    description="Table number in the RAL you're working on.",
+    choices=['1', '2', '3', '4', '5', '6']
   )
   launch_description.add_action(table_number_arg)
 
@@ -61,7 +62,8 @@ def generate_launch_description():
       "description_package": 'lab_description',
       "description_file": 'lab.urdf.xacro',
       "launch_rviz": 'true',
-      "rviz_config_file": PathJoinSubstitution([FindPackageShare('lab7'), 'config', 'lab7.rviz'])
+      "rviz_config_file": PathJoinSubstitution([FindPackageShare('lab7'), 'config', 'lab7.rviz']),
+      "kinematics_params_file": PathJoinSubstitution(EnvironmentVariable('HOME'), '/ur3e-kinematics-config/ur3e_mrc.yaml')
     }.items(),
   )
 
