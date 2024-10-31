@@ -386,7 +386,16 @@ void HandEyeCalibNode::saveCalibrationOutput()
   if (!output_file_txt.is_open())
     return;
 
-  output_file_txt << "Estimated Transformation: \n" << base2cam_frame_mat_.matrix << '\n';
+  output_file_txt << "Estimated Transformation Matrix: \n"
+                  << base2cam_frame_.matrix() << '\n';
+
+  Eigen::Vector<double, 7> pose_vector;
+  Eigen::Quaterniond rotation_q {base2cam_frame_.rotation()};
+  pose_vector << base2cam_frame_.translation(), rotation_q.coeffs();
+
+  output_file_txt << "Estimated transform in pose vector format: \n"
+                  << pose_vector << '\n';
+
   output_file_txt.close();
 }
 
