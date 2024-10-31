@@ -93,6 +93,13 @@ void HandEyeCalibNode::serviceCallback(
 
   case (lab7::srv::HandEyeCalib::Request::VERIFY):
     verifyCalibration();
+
+    if (!is_verification_complete_) {
+      response->set__success(false);
+
+      return;
+    }
+
     break;
 
   case (lab7::srv::HandEyeCalib::Request::RESET):
