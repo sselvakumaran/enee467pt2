@@ -77,11 +77,11 @@ void EEFPoseTracker::requestCallback(
     return;
   }
 
-  if (!std::filesystem::is_directory(workspace_dir_ + "/output"))
-    std::filesystem::create_directory(workspace_dir_ + "/output");
+  if (!std::filesystem::is_directory(workspace_dir_ + "/output/lab8"))
+    std::filesystem::create_directories(workspace_dir_ + "/output/lab8");
 
   output_timestamp_ = createTimeStamp();
-  poses_csv_.open(workspace_dir_ + "/output/poses-" + output_timestamp_ + ".csv");
+  poses_csv_.open(workspace_dir_ + "/output/lab8/poses-" + output_timestamp_ + ".csv");
 
   from_frame_ = request->tf_root_frame_name;
   to_frame_ = request->tf_tip_frame_name;
@@ -184,7 +184,7 @@ void EEFPoseTracker::plotData()
   matplot::ylabel(axis_y_label);
   matplot::plot(axis_x_points, axis_y_points);
 
-  matplot::save(workspace_dir_ + "/output/plot-" + output_timestamp_ + ".png");
+  matplot::save(workspace_dir_ + "/output/lab8/plot-" + output_timestamp_ + ".png");
 }
 
 std::string EEFPoseTracker::createTimeStamp()
