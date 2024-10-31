@@ -36,10 +36,7 @@ void findLeastSquaresErrorVector(
 
   least_squares_vec_out = Eigen::Vector<double, 7>::Zero();
 
-  /**
-   * TODO: Apply the least squares method to each component of the error vector separately to form
-   *       the least squares error vector.
-   */
+  /// TODO: Apply the least squares method to the error vector to form the least squares error vector.
 
 }
 
