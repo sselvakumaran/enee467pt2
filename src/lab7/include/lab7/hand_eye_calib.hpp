@@ -78,7 +78,8 @@ private:
   std::vector<Eigen::Quaterniond> actual_eef_orientations_ {};
 
   Eigen::Vector<double, 7> mean_error_vector_ {Eigen::Vector<double, 7>::Zero()};
-  Eigen::Vector<double, 7> least_squares_vector_ {Eigen::Vector<double, 7>::Zero()};
+  Eigen::Vector<double, 7> sum_of_squared_errors_vector_ {Eigen::Vector<double, 7>::Zero()};
+  Eigen::Vector<double, 7> root_sum_of_squared_errors_vector_ {Eigen::Vector<double, 7>::Zero()};
 
   Eigen::Matrix<double, 7, 7> covariance_matrix_ {Eigen::Matrix<double, 7, 7>::Zero()};
 

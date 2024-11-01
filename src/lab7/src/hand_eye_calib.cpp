@@ -93,6 +93,13 @@ void HandEyeCalibNode::serviceCallback(
 
   case (lab7::srv::HandEyeCalib::Request::VERIFY):
     verifyCalibration();
+
+    if (!is_verification_complete_) {
+      response->set__success(false);
+
+      return;
+    }
+
     break;
 
   case (lab7::srv::HandEyeCalib::Request::RESET):
@@ -379,7 +386,16 @@ void HandEyeCalibNode::saveCalibrationOutput()
   if (!output_file_txt.is_open())
     return;
 
-  output_file_txt << "Estimated Transformation: \n" << base2cam_frame_mat_.matrix << '\n';
+  output_file_txt << "Estimated Transformation Matrix: \n"
+                  << base2cam_frame_.matrix() << '\n';
+
+  Eigen::Vector<double, 7> pose_vector;
+  Eigen::Quaterniond rotation_q {base2cam_frame_.rotation()};
+  pose_vector << base2cam_frame_.translation(), rotation_q.coeffs();
+
+  output_file_txt << "Estimated transform in pose vector format: \n"
+                  << pose_vector << '\n';
+
   output_file_txt.close();
 }
 
@@ -406,8 +422,10 @@ void HandEyeCalibNode::saveVerificationOutput()
              << mean_error_vector_ << '\n' << '\n'
              << "Covariance matrix: " << '\n'
              << covariance_matrix_ << '\n' << '\n'
-             << "Least squares error vector:" << '\n'
-             << least_squares_vector_ << '\n';
+             << "Sum of squares error vector: " << '\n'
+             << sum_of_squared_errors_vector_ << '\n' << '\n'
+             << "Root sum of squares error vector: " << '\n'
+             << root_sum_of_squared_errors_vector_ << '\n';
 
   output_txt.close();
 }

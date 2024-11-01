@@ -27,7 +27,7 @@ void findCovarianceMatrix(
 
 }
 
-void findLeastSquaresErrorVector(
+void findSumOfSquaredErrorsVector(
   const std::vector<Eigen::Vector<double, 7>>& error_vecs_in,
   Eigen::Vector<double, 7>& least_squares_vec_out)
 {
@@ -36,10 +36,7 @@ void findLeastSquaresErrorVector(
 
   least_squares_vec_out = Eigen::Vector<double, 7>::Zero();
 
-  /**
-   * TODO: Apply the least squares method to each component of the error vector separately to form
-   *       the least squares error vector.
-   */
+  /// TODO: Find the sum of the squared errors using the error vectors.
 
 }
 
@@ -64,18 +61,21 @@ void HandEyeCalibNode::verifyCalibration()
    *     (Check if the magnitude of this quaternion is close to 1)
    */
   for (unsigned int i {0}; i < estimated_eef_orientations_.size(); i++) {
-    Eigen::Vector<double, 7> estimated_pose_vec {};
-    estimated_pose_vec << estimated_eef_positions_.at(i), estimated_eef_orientations_.at(i).coeffs();
+    auto position_error {estimated_eef_positions_.at(i) - actual_eef_positions_.at(i)};
 
-    Eigen::Vector<double, 7> actual_pose_vec {};
-    actual_pose_vec << actual_eef_positions_.at(i), actual_eef_orientations_.at(i).coeffs();
+    auto orientation_error {
+      estimated_eef_orientations_.at(i).conjugate() * actual_eef_orientations_.at(i)};
 
-    error_vecs.push_back(estimated_pose_vec - actual_pose_vec);
+    Eigen::Vector<double, 7> error_vector;
+    error_vector << position_error, orientation_error.coeffs();
+
+    error_vecs.push_back(error_vector);
   }
 
   findMeanErrorVector(error_vecs, mean_error_vector_);
   findCovarianceMatrix(error_vecs, mean_error_vector_, covariance_matrix_);
-  findLeastSquaresErrorVector(error_vecs, least_squares_vector_);
+  findSumOfSquaredErrorsVector(error_vecs, sum_of_squared_errors_vector_);
+  root_sum_of_squared_errors_vector_ = sum_of_squared_errors_vector_.array().sqrt();
 
   RCLCPP_INFO(this->get_logger(), "Verification results can be saved now.");
 
