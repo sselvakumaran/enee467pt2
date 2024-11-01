@@ -422,8 +422,10 @@ void HandEyeCalibNode::saveVerificationOutput()
              << mean_error_vector_ << '\n' << '\n'
              << "Covariance matrix: " << '\n'
              << covariance_matrix_ << '\n' << '\n'
-             << "Least squares error vector:" << '\n'
-             << least_squares_vector_ << '\n';
+             << "Sum of squares error vector: " << '\n'
+             << sum_of_squared_errors_vector_ << '\n' << '\n'
+             << "Root sum of squares error vector: " << '\n'
+             << root_sum_of_squared_errors_vector_ << '\n';
 
   output_txt.close();
 }
