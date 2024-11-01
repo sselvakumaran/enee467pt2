@@ -72,7 +72,10 @@ void HandEyeCalibNode::verifyCalibration()
     auto orientation_error {
       estimated_eef_orientations_.at(i).conjugate() * actual_eef_orientations_.at(i)};
 
-    error_vecs.emplace_back(position_error, orientation_error.coeffs());
+    Eigen::Vector<double, 7> error_vector;
+    error_vector << position_error, orientation_error.coeffs();
+
+    error_vecs.push_back(error_vector);
   }
 
   findMeanErrorVector(error_vecs, mean_error_vector_);
