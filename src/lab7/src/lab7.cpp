@@ -61,10 +61,10 @@ void HandEyeCalibNode::verifyCalibration()
    *     (Check if the magnitude of this quaternion is close to 1)
    */
   for (unsigned int i {0}; i < estimated_eef_orientations_.size(); i++) {
-    auto position_error {estimated_eef_positions_.at(i) - actual_eef_positions_.at(i)};
+    auto position_error {actual_eef_positions_.at(i) - estimated_eef_positions_.at(i)};
 
     auto orientation_error {
-      estimated_eef_orientations_.at(i).conjugate() * actual_eef_orientations_.at(i)};
+      actual_eef_orientations_.at(i).conjugate() * estimated_eef_orientations_.at(i)};
 
     Eigen::Vector<double, 7> error_vector;
     error_vector << position_error, orientation_error.coeffs();
