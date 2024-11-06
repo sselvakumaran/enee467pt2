@@ -46,10 +46,10 @@ Covariance matrix:
  -0.112811  -0.587114   -1.14549   0.343596   0.173656     1.0582   -1.75418  ;
   0.542731    1.47603    3.05489  -0.746645  -0.300766   -1.75418    4.16758  ]
 ### 4. Give your assessment of the quality of the calibration.
-  a. How close to zero is the sample mean of the error? Note that a common test of the size of a vector is its length (In mathematics, it’s norm).
-The norm of our Mean error vector is 3.2290, which is relatively low and most of the error comes in the z direction.
-  b. Are the position measurements more reliable than the orientation measurements?
-On average, the orientation measurements were more accurate.
+  a. How close to zero is the sample mean of the error? Note that a common test of the size of a vector is its length (In mathematics, it’s norm).  
+The norm of our Mean error vector is 3.2290, which is relatively low and most of the error comes in the z direction.  
+  b. Are the position measurements more reliable than the orientation measurements?  
+On average, the orientation measurements were more accurate.  
 
 # Lab 8
 ## Report
