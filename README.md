@@ -50,3 +50,15 @@ Covariance matrix:
 The norm of our Mean error vector is 3.2290, which is relatively low and most of the error comes in the z direction.
   b. Are the position measurements more reliable than the orientation measurements?
 On average, the orientation measurements were more accurate.
+
+# Lab 8
+## Report
+### 1. Include properly labelled plots of both squares and the circle. These can be a single plot for each figure. Orient the plot to put the entire figure in the plane of the plot. Note that these plots are based on data from the camera
+
+### 2. Analytically determine the upper bounding circle and the lower bounding circle for the 20-sided polygon you use to approximate a circle in your code for the robot.
+
+### 3. Include plots of the actual (the robot) and theoretical (the simulation) squares.
+
+### 4. Explain the rationale for your solution to the maximum square problem.
+
+### 5. Report the smallest time required to traverse the maximum square.
