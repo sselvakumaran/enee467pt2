@@ -56,9 +56,10 @@ On average, the orientation measurements were more accurate.
 ### 1. Include properly labelled plots of both squares and the circle. These can be a single plot for each figure. Orient the plot to put the entire figure in the plane of the plot. Note that these plots are based on data from the camera
 
 ### 2. Analytically determine the upper bounding circle and the lower bounding circle for the 20-sided polygon you use to approximate a circle in your code for the robot.
-
+ The upper bounding circle will include all the vertices of the 20-sided polygon used to approximate a circle in out code. Each vertex represents the arm fully stretched out, so the radius of the horizontal circle is about r (the mazimum length of the arm) and approximately r/2 for the vertical circle.  
+ The lower bounding circle will be tangent to each side of the 20-sided polygon, so the radius will be r*cos(PI/r) for the horizontal circle and (r/2)*cos(2PI/r)
 ### 3. Include plots of the actual (the robot) and theoretical (the simulation) squares.
 
 ### 4. Explain the rationale for your solution to the maximum square problem.
-
+ The maximum square should have the robot base at its center and the robot arm fully extended at its corners. The corners are at PI/4, 3PI/4, -3PI/4, and -PI/4. If the fully extended arm has length r, the side length will be r*sqrt(2).
 ### 5. Report the smallest time required to traverse the maximum square.
