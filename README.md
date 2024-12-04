@@ -62,4 +62,7 @@ On average, the orientation measurements were more accurate.
 
 ### 4. Explain the rationale for your solution to the maximum square problem.
  The maximum square should have the robot base at its center and the robot arm fully extended at its corners. The corners are at PI/4, 3PI/4, -3PI/4, and -PI/4. If the fully extended arm has length r, the side length will be r*sqrt(2).
+
+ 
 ### 5. Report the smallest time required to traverse the maximum square.
+  For whatever reason, the robot was not able to travel the Cartesian path from corner to corner of the maximum square. Our full square was able to be .2 meters in side length, but we were able to get three sides of .6 side length at one point in the testing. 
